@@ -10,6 +10,7 @@ import ChatIndex from "./pages/ChatIndex";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import Test from "./pages/Test";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/chat" element={<ChatIndex />} />
+              <Route path="/test" element={<Test />} />
               <Route path="/chat/:id" element={<Chat />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />

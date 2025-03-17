@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -36,18 +36,14 @@
 
     --radius: 0.5rem;
 
-    /* Sidebar specific colors - light theme */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-background-hover: 0 0% 96%;
-    --sidebar-foreground: 222.2 84% 4.9%;
-    --sidebar-muted: 215.4 16.3% 46.9%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-
-    /* Chat specific colors - light theme */
-    --chat-background: 0 0% 100%;
-    --chat-foreground: 222.2 84% 4.9%;
-    --chat-input-background: 0 0% 100%;
-    --chat-input-border: 214.3 31.8% 91.4%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -79,46 +75,42 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
 
-    /* Sidebar specific colors - dark theme */
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-background-hover: 223 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-muted: 215 20.2% 65.1%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-
-    /* Chat specific colors - dark theme */
-    --chat-background: 222.2 84% 4.9%;
-    --chat-foreground: 210 40% 98%;
-    --chat-input-background: 222.2 84% 4.9%;
-    --chat-input-border: 217.2 32.6% 17.5%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   * {
     @apply border-border;
   }
 
+  html,
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply antialiased font-inter bg-background text-foreground;
+    font-family: "Inter", sans-serif;
     overflow: hidden;
   }
 
-  /* Custom scrollbar styles */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-muted/80 dark:bg-secondary/80;
-    border-radius: 3px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted dark:bg-secondary;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  li {
+    @apply font-inter;
   }
 }
 
@@ -135,4 +127,164 @@
   margin: 0;
   max-width: none;
   text-align: left;
+}
+
+.feature-tag {
+  @apply inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white;
+}
+
+.button-hover-effect {
+  @apply transition-all duration-300 ease-apple hover:scale-[1.03] active:scale-[0.97];
+}
+
+.glass-card {
+  @apply bg-white/95 backdrop-blur-md border border-gray-100/40 rounded-2xl shadow-sm;
+}
+
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pricing-card {
+  @apply rounded-3xl border border-gray-200 p-8 transition-all duration-300 hover:border-gray-300 hover:shadow-md;
+}
+
+.animate-appear {
+  opacity: 0;
+  animation: appear 0.6s ease-out forwards;
+}
+
+.pricing-card-highlight {
+  @apply border-black;
+}
+
+.faq-item {
+  @apply py-6 border-t border-gray-200 first:border-none;
+}
+
+/* Additional animation classes */
+.fade-bottom {
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+.max-w-container {
+  max-width: 1280px;
+}
+
+.appear-from-bottom {
+  animation: appearFromBottom 0.5s ease-out forwards;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted/80 dark:bg-secondary/80;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted dark:bg-secondary;
+}
+
+@keyframes appearFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-appear {
+  opacity: 0;
+  animation: appear 0.6s ease-out forwards;
+}
+
+.animate-appear-zoom {
+  opacity: 0;
+  transform: scale(0.9);
+  animation: appearZoom 0.6s ease-out forwards;
+}
+
+@keyframes appearZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+[animation-delay="100"] {
+  animation-delay: 100ms;
+}
+
+[animation-delay="200"] {
+  animation-delay: 200ms;
+}
+
+[animation-delay="300"] {
+  animation-delay: 300ms;
+}
+
+[animation-delay="400"] {
+  animation-delay: 400ms;
+}
+
+[animation-delay="500"] {
+  animation-delay: 500ms;
+}
+
+[animation-delay="600"] {
+  animation-delay: 600ms;
+}
+
+[animation-delay="700"] {
+  animation-delay: 700ms;
+}
+
+[animation-delay="800"] {
+  animation-delay: 800ms;
+}
+
+[animation-delay="900"] {
+  animation-delay: 900ms;
+}
+
+[animation-delay="1000"] {
+  animation-delay: 1000ms;
+}
+
+.font-inter {
+  font-family: "Inter", sans-serif;
 }
