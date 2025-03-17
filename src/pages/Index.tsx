@@ -1,6 +1,7 @@
 import { HeroSectionDemo } from "@/components/blocks/hero-section-demo";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import { Pricing } from "@/components/ui/pricing-section-with-comparison";
 import React, { useEffect } from "react";
 
@@ -20,20 +21,15 @@ const Index: React.FC = () => {
       { threshold: 0.1 }
     );
 
-    sections.forEach((section) => {
-      observer.observe(section);
-    });
+    sections.forEach((section) => observer.observe(section));
 
-    return () => {
-      sections.forEach((section) => {
-        observer.unobserve(section);
-      });
-    };
+    return () => sections.forEach((section) => observer.unobserve(section));
   }, []);
 
   return (
-    <div className="min-h-screen overflow-auto flex flex-col font-inter">
-      <main className="">
+    <div className="h-screen flex flex-col font-inter">
+      <main className="overflow-auto">
+        <Header />
         <HeroSectionDemo />
         <div id="pricing">
           <Pricing />
@@ -41,8 +37,8 @@ const Index: React.FC = () => {
         <div id="faq">
           <FAQ />
         </div>
+        <Footer />
       </main>
-      <Footer />
     </div>
   );
 };
