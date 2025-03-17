@@ -1,12 +1,11 @@
-
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightIcon } from "lucide-react";
-import { Mockup, MockupFrame } from "@/components/ui/mockup";
+import { Button } from "@/components/ui/button";
 import { Glow } from "@/components/ui/glow";
+import { Mockup, MockupFrame } from "@/components/ui/mockup";
 import { cn } from "@/lib/utils";
+import { ArrowRightIcon } from "lucide-react";
 
 interface HeroAction {
   text: string;
@@ -50,6 +49,7 @@ export function HeroSection({
 
   return (
     <section
+      id="home"
       className={cn(
         "bg-background text-foreground font-inter",
         "py-12 sm:py-24 md:py-32 px-4",
@@ -69,7 +69,10 @@ export function HeroSection({
 
           {/* Badge */}
           {badge && (
-            <Badge variant="outline" className="animate-fade-in opacity-0 [animation-fill-mode:forwards] gap-2">
+            <Badge
+              variant="outline"
+              className="animate-fade-in opacity-0 [animation-fill-mode:forwards] gap-2"
+            >
               <span className="text-muted-foreground">{badge.text}</span>
               <a href={badge.action.href} className="flex items-center gap-1">
                 {badge.action.text}
@@ -92,7 +95,12 @@ export function HeroSection({
           {/* Actions */}
           <div className="relative z-10 flex animate-fade-in opacity-0 [animation-delay:200ms] [animation-fill-mode:forwards] justify-center gap-4">
             {actions.map((action, index) => (
-              <Button key={index} variant={action.variant === "glow" ? "outline" : "default"} size="lg" asChild>
+              <Button
+                key={index}
+                variant={action.variant === "glow" ? "outline" : "default"}
+                size="lg"
+                asChild
+              >
                 <a href={action.href} className="flex items-center gap-2">
                   {action.icon}
                   {action.text}
