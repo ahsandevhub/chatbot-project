@@ -6,7 +6,7 @@ const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="py-6 border-b border-gray-200 font-inter bg-white dark:bg-gray-900 dark:border-gray-700">
+    <header className="py-3 border-b border-gray-200 font-inter bg-white dark:bg-gray-900 dark:border-gray-700">
       <div className="container px-4 md:px-6 flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center space-x-2">
@@ -42,20 +42,20 @@ const Header: React.FC = () => {
         </nav>
 
         {/* Right Section: Theme Toggle + Mobile Menu + Start Free Button */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <ThemeToggle />
 
           {/* Start Free Button */}
           <a
             href="/chat"
-            className="hidden md:block bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+            className="hidden md:block bg-gray-800 hover:bg-gray-700 dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-gray-900 text-white px-4 py-2 rounded-lg transition-colors"
           >
             Start Free
           </a>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 pe-0"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <Menu size={24} />
@@ -83,14 +83,6 @@ const Header: React.FC = () => {
             className="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
           >
             FAQ
-          </a>
-
-          {/* Start Free Button (Mobile) */}
-          <a
-            href="/chat"
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Start Free
           </a>
         </div>
       )}

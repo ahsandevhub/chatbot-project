@@ -34,9 +34,9 @@ const features: PlanFeature[] = [
   },
   {
     name: "Extended Trading Hours",
-    intern: "-",
-    equityAnalyst: <Check className="h-5 w-5 text-black" />,
-    globalMacro: <Check className="h-5 w-5 text-black" />,
+    intern: <Minus className="h-5 w-5 text-gray-400 dark:text-gray-600" />,
+    equityAnalyst: <Check className="h-5 w-5 text-black dark:text-white" />,
+    globalMacro: <Check className="h-5 w-5 text-black dark:text-white" />,
   },
   {
     name: "Historical Data",
@@ -46,9 +46,9 @@ const features: PlanFeature[] = [
   },
   {
     name: "Intraday Data",
-    intern: "-",
-    equityAnalyst: <Check className="h-5 w-5 text-black" />,
-    globalMacro: <Check className="h-5 w-5 text-black" />,
+    intern: <Minus className="h-5 w-5 text-gray-400 dark:text-gray-600" />,
+    equityAnalyst: <Check className="h-5 w-5 text-black dark:text-white" />,
+    globalMacro: <Check className="h-5 w-5 text-black dark:text-white" />,
   },
 ];
 
@@ -71,20 +71,23 @@ export function Pricing({
     <section
       id="pricing"
       aria-labelledby="pricing-heading"
-      className={cn("py-16 md:py-24 lg:py-32 bg-gray-50 font-inter", className)}
+      className={cn(
+        "py-16 md:py-24 lg:py-32 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100",
+        className
+      )}
       {...props}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <div className="flex justify-center">
-            <div className="inline-block bg-gray-800 text-white py-0.5 px-3 text-sm rounded-md font-medium">
+            <div className="inline-block bg-gray-800 dark:bg-gray-700 text-white py-0.5 px-3 text-sm rounded-md font-medium">
               Pricing
             </div>
           </div>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl font-inter">
+          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
             Prices that won't break the bank!
           </h2>
-          <p className="mt-4 text-muted-foreground font-inter">
+          <p className="mt-4 text-gray-600 dark:text-gray-300">
             Trading is hard. Accessing historical data shouldn't be.
           </p>
         </div>
@@ -122,7 +125,7 @@ export function Pricing({
         </div>
         <div className="mx-auto mt-16 max-w-6xl overflow-x-auto">
           <div className="min-w-max">
-            <div className="grid grid-cols-4 gap-8 py-4 border-b border-gray-200">
+            <div className="grid grid-cols-4 gap-8 py-4 border-b border-gray-200 dark:border-gray-700">
               <div className="text-lg font-semibold">Features</div>
               <div className="text-center">Intern</div>
               <div className="text-center">Equity Analyst</div>
@@ -131,7 +134,7 @@ export function Pricing({
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="grid grid-cols-4 gap-8 py-4 border-b border-gray-200"
+                className="grid grid-cols-4 gap-8 py-4 border-b border-gray-200 dark:border-gray-700"
               >
                 <div>{feature.name}</div>
                 <div className="flex justify-center">
@@ -139,7 +142,7 @@ export function Pricing({
                     feature.intern ? (
                       <Check className="h-5 w-5 text-primary" />
                     ) : (
-                      <Minus className="h-5 w-5 text-gray-400" />
+                      <Minus className="h-5 w-5 text-gray-400 dark:text-gray-600" />
                     )
                   ) : (
                     feature.intern
@@ -150,7 +153,7 @@ export function Pricing({
                     feature.equityAnalyst ? (
                       <Check className="h-5 w-5 text-primary" />
                     ) : (
-                      <Minus className="h-5 w-5 text-gray-400" />
+                      <Minus className="h-5 w-5 text-gray-400 dark:text-gray-600" />
                     )
                   ) : (
                     feature.equityAnalyst
@@ -161,7 +164,7 @@ export function Pricing({
                     feature.globalMacro ? (
                       <Check className="h-5 w-5 text-primary" />
                     ) : (
-                      <Minus className="h-5 w-5 text-gray-400" />
+                      <Minus className="h-5 w-5 text-gray-400 dark:text-gray-600" />
                     )
                   ) : (
                     feature.globalMacro
@@ -186,15 +189,17 @@ function PricingTier({
   return (
     <div
       className={cn(
-        "rounded-3xl border border-gray-200 p-8 transition-all duration-300 hover:border-gray-300 hover:shadow-md bg-white",
+        "rounded-3xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:border-gray-300 hover:shadow-md bg-white dark:bg-gray-800",
         highlight && "border-primary"
       )}
     >
       <h3 className="text-2xl font-bold mb-3">{name}</h3>
-      <p className="text-gray-600 mb-6">{description}</p>
+      <p className="text-gray-600 dark:text-gray-300 mb-6">{description}</p>
       <div className="flex items-end mb-6">
-        <span className="text-4xl font-bold">${price}</span>
-        <span className="text-gray-500 ml-1">/ month</span>
+        <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+          ${price}
+        </span>
+        <span className="text-gray-500 dark:text-gray-400 ml-1">/ month</span>
       </div>
       <Button
         className="w-full mb-8"

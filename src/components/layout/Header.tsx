@@ -1,16 +1,15 @@
-
-import React from "react";
-import { useChat } from "../../context/ChatContext";
-import { useParams } from "react-router-dom";
-import { PanelLeft } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import UserMenu from "./UserMenu";
+import { PanelLeft } from "lucide-react";
+import React from "react";
+import { useParams } from "react-router-dom";
+import { useChat } from "../../context/ChatContext";
 import { ThemeToggle } from "../ui/ThemeToggle";
+import UserMenu from "./UserMenu";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -20,9 +19,9 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
   const { id } = useParams<{ id: string }>();
   const { conversations } = useChat();
-  
-  const currentConversation = conversations.find(conv => conv.id === id);
-  
+
+  const currentConversation = conversations.find((conv) => conv.id === id);
+
   return (
     <div className="flex items-center justify-between h-14 border-b border-border px-4 flex-shrink-0">
       <div className="flex items-center">
@@ -30,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, isSidebarOpen }) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button 
+                <button
                   onClick={toggleSidebar}
                   className="mr-2 p-2 rounded-md hover:bg-accent transition-colors"
                 >
