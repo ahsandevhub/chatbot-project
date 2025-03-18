@@ -3,8 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Login from "./components/Login"; // Import Login component
+import { useEffect } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import AuthRedirectHandler from "./components/AuthRedirectHandler";
+import Login from "./components/Login";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import Profile from "./components/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -12,7 +14,7 @@ import Signup from "./components/Signup";
 import TermsAndServices from "./components/TermsAndServices";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
-import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import Chat from "./pages/Chat";
 import ChatIndex from "./pages/ChatIndex";
 import Index from "./pages/Index";
@@ -21,6 +23,28 @@ import Settings from "./pages/Settings";
 import Test from "./pages/Test";
 
 const queryClient = new QueryClient();
+
+const ThemeSetter = () => {
+  const location = useLocation();
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    const alwaysLightRoutes = [
+      "/",
+      "/login",
+      "/signup",
+      "/profile",
+      "/privacy-policy",
+      "/terms-services",
+    ];
+
+    if (alwaysLightRoutes.includes(location.pathname)) {
+      setTheme("light");
+    }
+  }, [location.pathname, setTheme]);
+
+  return null; // This component doesn't render anything
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -31,6 +55,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
+              <ThemeSetter /> {/* Add the ThemeSetter component */}
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
@@ -38,6 +63,10 @@ const App = () => (
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-services" element={<TermsAndServices />} />
+                <Route
+                  path="/auth/callback"
+                  element={<AuthRedirectHandler />}
+                />
                 <Route element={<ProtectedRoute />}>
                   <Route path="/chat" element={<ChatIndex />} />
                   <Route path="/test" element={<Test />} />

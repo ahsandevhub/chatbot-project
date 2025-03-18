@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { LogOut, Settings } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const UserMenu: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +22,9 @@ const UserMenu: React.FC = () => {
 
   const handleLogout = async () => {
     await signOut();
+    toast.success("Logged out successfully!", {
+      position: "bottom-center",
+    });
   };
 
   return (

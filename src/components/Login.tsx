@@ -1,21 +1,28 @@
 import { ArrowLeftIcon, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { signIn } = useAuth();
+  const { signIn, googleSignIn } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setLoading(true);
     try {
       await signIn(email, password);
+      toast.success("Logged in successfully!", {
+        position: "bottom-center",
+      });
       navigate("/chat");
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -23,6 +30,8 @@ const Login = () => {
       } else {
         setErrorMsg("An unexpected error occurred.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,6 +41,31 @@ const Login = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleGoogleSignInClick = async () => {
+    setErrorMsg(null);
+    setGoogleLoading(true);
+    try {
+      const { error } = await googleSignIn();
+      if (error) {
+        console.log("Google sign-in error", error);
+        setErrorMsg(error.message);
+      } else {
+        toast.success("Signed in with Google!", {
+          position: "bottom-center",
+        });
+        navigate("/chat");
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorMsg(error.message);
+      } else {
+        setErrorMsg("An unexpected error occurred.");
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -68,14 +102,12 @@ const Login = () => {
             />
           </div>
           <div className="mb-4">
-            {" "}
-            {/* Relative positioning for icon */}
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium">
               Password
             </label>
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"} // Toggle password visibility
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -84,7 +116,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-3 top-1/2 -translate-y-1/2 pt-1 flex items-center text-gray-500" // Icon positioning
+                className="absolute inset-y-0 right-3 top-1/2 -translate-y-1/2 pt-1 flex items-center text-gray-500"
               >
                 {showPassword ? (
                   <EyeOff className="h-5 w-5" />
@@ -96,11 +128,35 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition"
+            className={`w-full mt-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 rounded-lg transition ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+        <div className="mt-4 flex items-center justify-center">
+          <div className="border-t border-gray-300 dark:border-gray-700 w-1/3"></div>
+          <span className="mx-2 text-gray-600 dark:text-gray-400">or</span>
+          <div className="border-t border-gray-300 dark:border-gray-700 w-1/3"></div>
+        </div>
+        <div className="mt-4 flex flex-col gap-2">
+          <button
+            onClick={handleGoogleSignInClick}
+            className={`flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 px-4 font-medium text-gray-700 bg-white hover:bg-gray-100 transition-all shadow-sm ${
+              googleLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={googleLoading}
+          >
+            <img src="/google-icon.webp" alt="Google" className="h-5 w-5" />
+            <span>
+              {googleLoading
+                ? "Signing in with Google..."
+                : "Continue with Google"}
+            </span>
+          </button>
+        </div>
         <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
           Don't have an account?{" "}
           <a href="/signup" className="text-indigo-500 hover:underline">
