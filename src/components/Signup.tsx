@@ -10,7 +10,7 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { signUp, googleSignIn, facebookSignIn } = useAuth();
+  const { signUp, googleSignIn } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -31,18 +31,18 @@ const Signup = () => {
     try {
       await signUp(email, password, firstName, lastName);
       toast.success(
-        "Account created successfully, Please confirm your email!",
-        {
-          position: "top-center",
-        }
+        "Account created successfully! Please confirm your email.",
+        { position: "top-center" }
       );
       navigate("/chat");
     } catch (error: unknown) {
       let message = "An unexpected error occurred.";
       if (error instanceof Error) {
-        message = error.message.includes("email-already-in-use")
-          ? "Email address is already in use."
-          : error.message;
+        if (error.message.includes("email-already-in-use")) {
+          message = "Email address is already in use.";
+        } else {
+          message = error.message;
+        }
       }
       setErrorMsg(message);
       toast.error(message, { position: "top-center" });
@@ -75,6 +75,7 @@ const Signup = () => {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+              required
             />
             <input
               type="text"
@@ -82,6 +83,7 @@ const Signup = () => {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+              required
             />
           </div>
           <input
@@ -90,6 +92,7 @@ const Signup = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-2 mb-4 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+            required
           />
           <div className="relative mb-4">
             <input
@@ -98,6 +101,7 @@ const Signup = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+              required
             />
             <button
               type="button"
@@ -118,6 +122,7 @@ const Signup = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+              required
             />
             <button
               type="button"
@@ -141,27 +146,44 @@ const Signup = () => {
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
-        <p className="my-3 text-center">or,</p>
-        <div className="flex flex-col gap-2 mt-4">
+        <div className="mt-4 flex items-center justify-center">
+          <div className="border-t border-gray-300 dark:border-gray-700 w-1/3"></div>
+          <span className="mx-2 text-gray-600 dark:text-gray-400">or</span>
+          <div className="border-t border-gray-300 dark:border-gray-700 w-1/3"></div>
+        </div>
+        <div className="mt-4 flex flex-col gap-2">
           <button
-            onClick={googleSignIn}
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg"
+            onClick={async () => {
+              setLoading(true);
+              setErrorMsg(null);
+              try {
+                await googleSignIn();
+                toast.success("Signed up successfully with Google!", {
+                  position: "top-center",
+                });
+                navigate("/chat");
+              } catch (error: unknown) {
+                let message = "An unexpected error occurred.";
+                if (error instanceof Error) {
+                  message = error.message.includes("email-already-in-use")
+                    ? "Email address is already in use."
+                    : error.message;
+                }
+                setErrorMsg(message);
+                toast.error(message, { position: "top-center" });
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className={`flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 px-4 font-medium text-gray-700 bg-white hover:bg-gray-100 transition-all shadow-sm ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
           >
-            Sign Up with Google
-          </button>
-          <button
-            onClick={facebookSignIn}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg"
-          >
-            Sign Up with Facebook
+            <img src="/google-icon.webp" alt="Google" className="h-5 w-5" />
+            <span>{loading ? "Signing up..." : "Continue with Google"}</span>
           </button>
         </div>
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
-          Already have an account?{" "}
-          <a href="/login" className="text-indigo-500 hover:underline">
-            Login
-          </a>
-        </p>
       </div>
     </div>
   );
