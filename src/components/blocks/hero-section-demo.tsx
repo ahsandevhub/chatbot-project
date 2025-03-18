@@ -4,6 +4,8 @@ export function HeroSectionDemo() {
   // Use the user's uploaded image for the mockup
   const mockupImage =
     "/lovable-uploads/660ca57e-eabd-48a6-aa45-9d55dc5b8597.png";
+  const mockupImageDark =
+    "/lovable-uploads/660ca57e-eabd-48a6-aa45-9d55dc5b8597-dark.png";
 
   return (
     <HeroSection
@@ -21,7 +23,7 @@ export function HeroSectionDemo() {
       ]}
       image={{
         light: mockupImage,
-        dark: mockupImage,
+        dark: mockupImageDark,
         alt: "AI Assistant Interface",
       }}
     />

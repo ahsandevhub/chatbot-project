@@ -25,13 +25,13 @@ const Footer: React.FC = () => {
 
             <div className="flex gap-8">
               <a
-                href="#"
+                href="/privacy-policy"
                 className="text-gray-600 hover:text-black transition-colors font-inter"
               >
                 Privacy Policy
               </a>
               <a
-                href="#"
+                href="/terms-services"
                 className="text-gray-600 hover:text-black transition-colors font-inter"
               >
                 Terms of Service

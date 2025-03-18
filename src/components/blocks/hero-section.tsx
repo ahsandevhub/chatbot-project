@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Glow } from "@/components/ui/glow";
 import { Mockup, MockupFrame } from "@/components/ui/mockup";
+import { useTheme } from "@/context/ThemeContext"; // Import useTheme
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
 
@@ -44,8 +45,9 @@ export function HeroSection({
   actions,
   image,
 }: HeroProps) {
-  // Simplified for this implementation - we'll just use light theme
-  const imageSrc = image.light;
+  const { theme } = useTheme(); // Get the theme value
+
+  const imageSrc = theme === "dark" ? image.dark : image.light; // Set image source conditionally
 
   return (
     <section
@@ -56,7 +58,7 @@ export function HeroSection({
         "fade-bottom overflow-hidden pb-0"
       )}
     >
-      <div className="mx-auto flex max-w-container flex-col gap-12 pt-16 sm:gap-24">
+      <div className="mx-auto flex max-w-container flex-col gap-12 pt-0 sm:gap-24">
         <div className="flex flex-col items-center gap-6 text-center sm:gap-12">
           {/* Announcement */}
           {announcement && (
@@ -83,7 +85,6 @@ export function HeroSection({
 
           {/* Title */}
           <h1 className="relative z-10 inline-block animate-fade-in opacity-0 [animation-delay:100ms] [animation-fill-mode:forwards] bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-4xl font-semibold leading-tight text-transparent drop-shadow-2xl sm:text-6xl sm:leading-tight md:text-8xl md:leading-tight">
-            {/* Replace spaces with non-breaking spaces where needed */}
             {title.replace("on Demand", "on\u00A0Demand")}
           </h1>
 

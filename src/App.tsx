@@ -5,9 +5,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./components/Login"; // Import Login component
+import PrivacyPolicy from "./components/PrivacyPolicy";
 import Profile from "./components/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Signup from "./components/Signup";
+import TermsAndServices from "./components/TermsAndServices";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -34,6 +36,8 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-services" element={<TermsAndServices />} />
                 <Route element={<ProtectedRoute />}>
                   <Route path="/chat" element={<ChatIndex />} />
                   <Route path="/test" element={<Test />} />
