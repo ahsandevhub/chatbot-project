@@ -1,7 +1,6 @@
 import { Mail } from "lucide-react";
 import React from "react";
 import Logo from "./Logo";
-import { ThemeToggle } from "./ui/ThemeToggle";
 
 const Footer: React.FC = () => {
   return (
@@ -37,9 +36,6 @@ const Footer: React.FC = () => {
               >
                 Terms of Service
               </a>
-            </div>
-            <div className="mx-auto sm:mx-0">
-              <ThemeToggle />
             </div>
           </div>
         </div>

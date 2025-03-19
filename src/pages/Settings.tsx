@@ -39,6 +39,9 @@ const Settings: React.FC<SettingsProps> = () => {
     if (user?.user_metadata?.name) {
       return user.user_metadata.name.charAt(0).toUpperCase();
     }
+    if (user?.user_metadata?.firstName) {
+      return user.user_metadata.firstName.charAt(0).toUpperCase();
+    }
     if (user?.email) {
       return user.email.charAt(0).toUpperCase();
     }
@@ -62,6 +65,19 @@ const Settings: React.FC<SettingsProps> = () => {
     </div>
   );
 
+  const getUserDisplayName = () => {
+    if (user?.user_metadata?.name) {
+      return user.user_metadata.name;
+    }
+    if (user?.user_metadata?.firstName && user?.user_metadata?.lastName) {
+      return `${user.user_metadata.firstName} ${user.user_metadata.lastName}`;
+    }
+    if (user?.user_metadata?.firstName) {
+      return user.user_metadata.firstName;
+    }
+    return "N/A";
+  };
+
   return (
     <div className="sm:p-3 overflow-y-auto max-h-[80vh]">
       <div className="flex flex-col space-y-1 mb-8">
@@ -81,7 +97,7 @@ const Settings: React.FC<SettingsProps> = () => {
           <div className="flex items-center gap-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
             <Avatar className="h-14 w-14">
               {typeof getAvatarFallback() === "string" ? (
-                <AvatarFallback className="bg-primary text-lg font-medium">
+                <AvatarFallback className="bg-primary text-2xl font-medium text-white dark:text-gray-800">
                   {getAvatarFallback()}
                 </AvatarFallback>
               ) : (
@@ -90,9 +106,7 @@ const Settings: React.FC<SettingsProps> = () => {
             </Avatar>
             <div>
               <p className="text-base font-medium text-gray-900 dark:text-white">
-                {user.user_metadata?.name ||
-                  user.user_metadata?.full_name ||
-                  "N/A"}
+                {getUserDisplayName()}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {user.email}

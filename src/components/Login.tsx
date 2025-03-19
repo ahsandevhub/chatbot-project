@@ -23,7 +23,7 @@ const Login = () => {
     try {
       await signIn(email, password);
       toast.success("Logged in successfully!", {
-        position: "top-center",
+        position: "bottom-center",
       });
       navigate("/chat");
     } catch (error: unknown) {
@@ -54,10 +54,7 @@ const Login = () => {
         console.log("Google sign-in error", error);
         setErrorMsg(error.message);
       } else {
-        toast.success("Signed in with Google!", {
-          position: "top-center",
-        });
-        navigate("/chat");
+        // navigate("/chat");
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
