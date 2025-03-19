@@ -6,7 +6,7 @@ const Header: React.FC = () => {
   const { theme } = useTheme();
 
   return (
-    <header className="py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <header className="py-3 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       <div className="container px-4 md:px-6 flex justify-between items-center">
         <div className="flex items-center">
           <Link to="/">
