@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowLeftIcon, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -59,6 +59,13 @@ const ResetPassword = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md">
+        <button
+          onClick={() => navigate("/")}
+          className="flex w-max mb-5 text-sm mr-auto items-center gap-2 hover:gap-1 transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+          <span>Go Back</span>
+        </button>
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-4">
           Reset Password
         </h2>

@@ -1,102 +1,188 @@
-
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/layout/Sidebar";
-import Header from "../components/layout/Header";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { useIsMobile } from "../hooks/use-mobile";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
+import { Moon } from "lucide-react";
+import { useTheme } from "next-themes";
+import React from "react";
 
-const Settings: React.FC = () => {
-  const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const isMobile = useIsMobile();
+interface SettingsProps {
+  onClose: () => void;
+}
+
+const Settings: React.FC<SettingsProps> = () => {
   const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    // Auto-close sidebar on mobile
-    if (isMobile) {
-      setIsSidebarOpen(false);
-    } else {
-      setIsSidebarOpen(true);
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) {
+      return "N/A";
     }
-  }, [isMobile]);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
+  const getAvatarFallback = () => {
+    if (user?.user_metadata?.avatar_url) {
+      return (
+        <img
+          src={user.user_metadata.avatar_url}
+          alt="User Avatar"
+          className="rounded-full h-14 w-14 object-cover border border-gray-200 shadow-sm"
+        />
+      );
+    }
+    if (user?.user_metadata?.name) {
+      return user.user_metadata.name.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return "😊";
+  };
+
+  const InfoRow = ({
+    label,
+    value,
+  }: {
+    label: string;
+    value: string | null;
+  }) => (
+    <div className="py-3 flex flex-col sm:flex-row sm:items-center border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <span className="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-48">
+        {label}
+      </span>
+      <span className="text-sm text-gray-900 dark:text-gray-200 font-mono">
+        {value || "N/A"}
+      </span>
+    </div>
+  );
+
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      <div 
-        className="flex flex-col flex-1 w-full transition-all duration-300"
-        style={{ 
-          marginLeft: !isMobile && isSidebarOpen ? '260px' : '0'
-        }}
-      >
-        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center mb-6">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="mr-2" 
-                onClick={() => navigate(-1)}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              <h1 className="text-2xl font-semibold">Settings</h1>
+    <div className="sm:p-3 overflow-y-auto max-h-[80vh]">
+      <div className="flex flex-col space-y-1 mb-8">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          Settings
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Customize your experience
+        </p>
+      </div>
+
+      {user && (
+        <div className="mb-8">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
+            ACCOUNT
+          </h3>
+          <div className="flex items-center gap-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+            <Avatar className="h-14 w-14">
+              {typeof getAvatarFallback() === "string" ? (
+                <AvatarFallback className="bg-primary text-lg font-medium">
+                  {getAvatarFallback()}
+                </AvatarFallback>
+              ) : (
+                getAvatarFallback()
+              )}
+            </Avatar>
+            <div>
+              <p className="text-base font-medium text-gray-900 dark:text-white">
+                {user.user_metadata?.name ||
+                  user.user_metadata?.full_name ||
+                  "N/A"}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {user.email}
+              </p>
+              {user.phone && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {user.phone}
+                </p>
+              )}
             </div>
-            
-            <Separator className="my-6" />
-            
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-lg font-medium mb-4">Account</h2>
-                <div className="bg-accent/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Manage your account settings and preferences.
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <h2 className="text-lg font-medium mb-4">Appearance</h2>
-                <div className="bg-accent/50 p-4 rounded-lg space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Dark Mode</p>
-                      <p className="text-sm text-muted-foreground">
-                        Toggle between light and dark themes
-                      </p>
-                    </div>
-                    <Switch 
-                      checked={theme === "dark"}
-                      onCheckedChange={(checked) => {
-                        setTheme(checked ? "dark" : "light");
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h2 className="text-lg font-medium mb-4">Notifications</h2>
-                <div className="bg-accent/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Configure how and when you receive notifications.
-                  </p>
-                </div>
-              </div>
+          </div>
+
+          <div className="mt-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+              Account Details
+            </h4>
+            <div className="space-y-1">
+              <InfoRow label="User ID" value={user.id} />
+              <InfoRow label="Email" value={user.email} />
+              <InfoRow label="Phone" value={user.phone} />
+              {/* <InfoRow label="Instance ID" value={user.instance_id} /> */}
+              <InfoRow label="Audience" value={user.aud} />
+              <InfoRow label="Role" value={user.role} />
+              <InfoRow
+                label="Account Created"
+                value={user.created_at ? formatDate(user.created_at) : null}
+              />
+              <InfoRow
+                label="Email Confirmed"
+                value={
+                  user.email_confirmed_at
+                    ? formatDate(user.email_confirmed_at)
+                    : null
+                }
+              />
+              <InfoRow
+                label="Last Sign In"
+                value={
+                  user.last_sign_in_at ? formatDate(user.last_sign_in_at) : null
+                }
+              />
+              {/* <InfoRow
+                label="Account Type"
+                value={user.is_sso_user ? "SSO User" : "Email User"}
+              />
+              <InfoRow
+                label="Authentication Provider"
+                value={
+                  Array.isArray(user.providers)
+                    ? user.providers.join(", ")
+                    : user.providers
+                }
+              /> */}
             </div>
           </div>
         </div>
+      )}
+
+      <div>
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
+          APPEARANCE
+        </h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-3">
+              <Moon className="w-5 h-5 text-gray-500" />
+              <div>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  Dark mode
+                </span>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Switch between light and dark theme
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={theme === "dark"}
+              onCheckedChange={(checked) =>
+                setTheme(checked ? "dark" : "light")
+              }
+              className="data-[state=checked]:bg-green-600"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+        <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+          Version 1.0.0
+        </p>
       </div>
     </div>
   );
