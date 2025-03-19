@@ -45,7 +45,7 @@ const Signup = () => {
       await signUp(email.trim(), password, firstName, lastName);
       console.log("Signup successful!");
       toast.success(
-        "Account created successfully! We've sent you an email please confirm before login.",
+        "Account registered successfully! We've sent you an email please confirm before login.",
         { position: "top-center" }
       );
       navigate("/login");
