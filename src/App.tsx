@@ -10,6 +10,7 @@ import Login from "./components/Login";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import Profile from "./components/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ResetPassword from "./components/ResetPassword";
 import Signup from "./components/Signup";
 import TermsAndServices from "./components/TermsAndServices";
 import { AuthProvider } from "./context/AuthContext";
@@ -59,6 +60,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />

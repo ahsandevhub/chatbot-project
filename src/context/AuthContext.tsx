@@ -13,8 +13,8 @@ interface AuthContextType {
     lastName: string
   ) => Promise<void>;
   signOut: () => Promise<void>;
-  googleSignIn: () => Promise<{ error: AuthError | null }>; // Changed return type
-  facebookSignIn: () => Promise<void>;
+  googleSignIn: () => Promise<{ error: AuthError | null }>;
+  resetPassword: (email: string) => Promise<void>; // Added resetPassword
 }
 
 interface AuthProviderProps {
@@ -82,17 +82,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error };
   };
 
-  const facebookSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "facebook",
-      options: { redirectTo: window.location.origin + "/chat" },
+  const resetPassword = async (email: string) => {
+    // Added resetPassword implementation
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/reset-password",
     });
     if (error) throw error;
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, signIn, signUp, signOut, googleSignIn, facebookSignIn }}
+      value={{
+        user,
+        signIn,
+        signUp,
+        signOut,
+        googleSignIn,
+        resetPassword, // Added resetPassword to the provider value
+      }}
     >
       {children}
     </AuthContext.Provider>

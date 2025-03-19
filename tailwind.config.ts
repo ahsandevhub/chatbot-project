@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Config } from "tailwindcss";
+import tailwindAnimate from "tailwindcss-animate";
+import colors from "tailwindcss/colors";
+import { default as flattenColorPalette } from "tailwindcss/lib/util/flattenColorPalette";
 
-export default {
+const config: Config = {
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -79,6 +83,7 @@ export default {
             border: "hsl(var(--chat-input-border))",
           },
         },
+        ...colors, // Add all tailwind colors to the theme.
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -153,5 +158,18 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+  plugins: [tailwindAnimate, addVariablesForColors],
+};
+
+function addVariablesForColors({ addBase, theme }: any) {
+  const allColors = flattenColorPalette(theme("colors"));
+  const newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+  );
+
+  addBase({
+    ":root": newVars,
+  });
+}
+
+export default config;

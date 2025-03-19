@@ -1,3 +1,4 @@
+// src/components/Signup.tsx
 import { ArrowLeftIcon, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +18,11 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const validateEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -28,18 +34,35 @@ const Signup = () => {
       return;
     }
 
+    if (!validateEmail(email)) {
+      setErrorMsg("Invalid email format.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await signUp(email, password, firstName, lastName);
+      await signUp(email.trim(), password, firstName, lastName);
+      console.log("Signup successful!");
       toast.success(
-        "Account created successfully! Please confirm your email.",
+        "Account created successfully! We've sent you an email please confirm before login.",
         { position: "top-center" }
       );
-      navigate("/chat");
+      navigate("/login");
     } catch (error: unknown) {
       let message = "An unexpected error occurred.";
       if (error instanceof Error) {
-        if (error.message.includes("email-already-in-use")) {
+        console.error("Signup Error:", error);
+        interface SupabaseAuthError extends Error {
+          code?: string;
+          error?: {
+            message: string;
+          };
+        }
+        const supabaseError = error as SupabaseAuthError;
+        if (supabaseError.code === "email_exists") {
           message = "Email address is already in use.";
+        } else if (supabaseError.code === "email_not_confirmed") {
+          message = "Please confirm your email before logging in.";
         } else {
           message = error.message;
         }
@@ -56,7 +79,7 @@ const Signup = () => {
       <div className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md">
         <button
           onClick={() => navigate("/")}
-          className="flex w-max text-sm mb-4 items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+          className="flex w-max text-sm mr-auto items-center gap-2 hover:gap-1 transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
         >
           <ArrowLeftIcon className="h-5 w-5" />
           <span>Go Back</span>
@@ -157,17 +180,23 @@ const Signup = () => {
               setLoading(true);
               setErrorMsg(null);
               try {
-                await googleSignIn();
-                toast.success("Signed up successfully with Google!", {
-                  position: "top-center",
-                });
-                navigate("/chat");
+                const { error } = await googleSignIn();
+                if (error) {
+                  console.error("Signup Error:", error);
+                  if (error.message.toLowerCase().includes("email already")) {
+                    setErrorMsg("Email address is already in use.");
+                    toast.error("Email address is already in use.", {
+                      position: "top-center",
+                    });
+                  } else {
+                    setErrorMsg(error.message);
+                    toast.error(error.message, { position: "top-center" });
+                  }
+                }
               } catch (error: unknown) {
                 let message = "An unexpected error occurred.";
                 if (error instanceof Error) {
-                  message = error.message.includes("email-already-in-use")
-                    ? "Email address is already in use."
-                    : error.message;
+                  message = error.message;
                 }
                 setErrorMsg(message);
                 toast.error(message, { position: "top-center" });
@@ -175,7 +204,7 @@ const Signup = () => {
                 setLoading(false);
               }
             }}
-            className={`flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 px-4 font-medium text-gray-700 bg-white hover:bg-gray-100 transition-all shadow-sm ${
+            className={`flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 px-4 font-medium text-gray-700                        bg-white hover:bg-gray-100 transition-all shadow-sm ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={loading}
@@ -184,6 +213,12 @@ const Signup = () => {
             <span>{loading ? "Signing up..." : "Continue with Google"}</span>
           </button>
         </div>
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
+          Already have an account?{" "}
+          <a href="/login" className="text-indigo-500 hover:underline">
+            Login
+          </a>
+        </p>
       </div>
     </div>
   );

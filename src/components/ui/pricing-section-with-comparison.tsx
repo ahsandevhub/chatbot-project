@@ -193,16 +193,18 @@ function PricingTier({
         highlight && "border-primary"
       )}
     >
-      <h3 className="text-2xl font-bold mb-3">{name}</h3>
-      <p className="text-gray-600 dark:text-gray-300 mb-6">{description}</p>
-      <div className="flex items-end mb-6">
-        <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-          ${price}
-        </span>
-        <span className="text-gray-500 dark:text-gray-400 ml-1">/ month</span>
+      <div className="sm:h-64">
+        <h3 className="text-2xl font-bold mb-3">{name}</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">{description}</p>
+        <div className="flex items-end mb-6">
+          <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+            ${price}
+          </span>
+          <span className="text-gray-500 dark:text-gray-400 ml-1">/ month</span>
+        </div>
       </div>
       <Button
-        className="w-full mb-8"
+        className="w-full sm:mb-6"
         variant={highlight ? "default" : "outline"}
       >
         <a href={action.href}>{action.label}</a>

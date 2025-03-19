@@ -17,7 +17,7 @@ export function HeroSectionDemo() {
       actions={[
         {
           text: "Start Free",
-          href: "/chat",
+          href: "/login",
           variant: "default",
         },
       ]}

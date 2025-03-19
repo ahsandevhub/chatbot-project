@@ -1,6 +1,7 @@
 import { Mail } from "lucide-react";
 import React from "react";
 import Logo from "./Logo";
+import { ThemeToggle } from "./ui/ThemeToggle";
 
 const Footer: React.FC = () => {
   return (
@@ -17,7 +18,7 @@ const Footer: React.FC = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-10">
             <a
               href="mailto:support@stonk-hub.com"
-              className="flex items-center text-gray-600 hover:text-black transition-colors gap-1.5"
+              className="flex items-center text-gray-600 dark:hover:text-slate-300 hover:text-black transition-colors gap-1.5"
             >
               <Mail size={18} />
               <span>support@stonk-hub.com</span>
@@ -26,16 +27,19 @@ const Footer: React.FC = () => {
             <div className="flex gap-8">
               <a
                 href="/privacy-policy"
-                className="text-gray-600 hover:text-black transition-colors font-inter"
+                className="text-gray-600 dark:hover:text-slate-300 hover:text-black transition-colors font-inter"
               >
                 Privacy Policy
               </a>
               <a
                 href="/terms-services"
-                className="text-gray-600 hover:text-black transition-colors font-inter"
+                className="text-gray-600 dark:hover:text-slate-300 hover:text-black transition-colors font-inter"
               >
                 Terms of Service
               </a>
+            </div>
+            <div className="mx-auto sm:mx-0">
+              <ThemeToggle />
             </div>
           </div>
         </div>

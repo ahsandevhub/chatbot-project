@@ -7,12 +7,13 @@ import { useAuth } from "../context/AuthContext";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { signIn, googleSignIn } = useAuth();
+  const { signIn, googleSignIn, resetPassword } = useAuth(); // Add resetPassword from context
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false); // Add reset password loading state
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +22,7 @@ const Login = () => {
     try {
       await signIn(email, password);
       toast.success("Logged in successfully!", {
-        position: "bottom-center",
+        position: "top-center",
       });
       navigate("/chat");
     } catch (error: unknown) {
@@ -53,7 +54,7 @@ const Login = () => {
         setErrorMsg(error.message);
       } else {
         toast.success("Signed in with Google!", {
-          position: "bottom-center",
+          position: "top-center",
         });
         navigate("/chat");
       }
@@ -65,6 +66,28 @@ const Login = () => {
       }
     } finally {
       setGoogleLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setErrorMsg(null);
+    setResetPasswordLoading(true);
+    try {
+      await resetPassword(email);
+      toast.success(
+        "Password reset link sent to your email. Check your email.",
+        {
+          position: "top-center",
+        }
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorMsg(error.message);
+      } else {
+        setErrorMsg("An unexpected error occurred.");
+      }
+    } finally {
+      setResetPasswordLoading(false);
     }
   };
 
@@ -134,6 +157,18 @@ const Login = () => {
             disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}
+          </button>
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className={`w-full mt-5 text-indigo-500 hover:underline text-sm transition ${
+              resetPasswordLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={resetPasswordLoading}
+          >
+            {resetPasswordLoading
+              ? "Sending Reset Link..."
+              : "Forgot password?"}
           </button>
         </form>
         <div className="mt-4 flex items-center justify-center">
