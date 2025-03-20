@@ -36,87 +36,242 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [conversations, setConversations] = useState<Conversation[]>([
-    { id: "today-1", title: "UX/UI Designer", date: new Date() },
-    { id: "today-2", title: "Explore GPTs", date: new Date() },
+    // Today
     {
-      id: "yesterday-1",
-      title: "UI Clone Request",
+      id: "today-tech-performance",
+      title: "Tech Stocks Performance Today",
+      date: new Date(),
+    },
+    {
+      id: "today-bitcoin-price",
+      title: "Bitcoin Price Movement Today",
+      date: new Date(),
+    },
+
+    // Yesterday
+    {
+      id: "yesterday-eur-usd",
+      title: "EUR/USD Yesterday's Performance",
       date: new Date(Date.now() - 24 * 60 * 60 * 1000),
     },
     {
-      id: "yesterday-2",
-      title: "Hello World Interaction",
+      id: "yesterday-sp500-close",
+      title: "S&P 500 Close Yesterday",
       date: new Date(Date.now() - 24 * 60 * 60 * 1000),
     },
     {
-      id: "yesterday-3",
-      title: "HTML Code Explanation",
+      id: "yesterday-eth-staking",
+      title: "Ethereum Staking Rewards Update",
       date: new Date(Date.now() - 24 * 60 * 60 * 1000),
     },
     {
-      id: "yesterday-4",
-      title: "React vs Next.js Explained",
+      id: "yesterday-gbp-jpy",
+      title: "GBP/JPY Sentiment Analysis",
       date: new Date(Date.now() - 24 * 60 * 60 * 1000),
     },
     {
-      id: "yesterday-5",
-      title: "Python UI Design Tips",
+      id: "yesterday-nyse-finance",
+      title: "NYSE Financial Sector Review",
       date: new Date(Date.now() - 24 * 60 * 60 * 1000),
     },
+
+    // Last 7 Days
     {
-      id: "yesterday-6",
-      title: "LLM Chat Interface Design",
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      id: "week-altcoin-trends",
+      title: "Altcoin Market Trends Overview",
+      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
     },
     {
-      id: "week-1",
-      title: "React reachat setup guide",
+      id: "week-aud-usd-calendar",
+      title: "AUD/USD Weekly Economic Calendar",
       date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
     },
     {
-      id: "week-2",
-      title: "Random Numbers CSV",
-      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-3",
-      title: "GmbH Anteliverkauf Steuer",
+      id: "week-tech-earnings",
+      title: "Tech Earnings for the Week",
       date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
     },
     {
-      id: "week-4",
-      title: "Binance API Kline Explanation",
-      date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-5",
-      title: "Format open_time column",
+      id: "week-defi-tvl",
+      title: "Defi TVL Growth Report",
       date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
     },
     {
-      id: "week-6",
-      title: "Sort dict by column",
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-7",
-      title: "Random File Selection Python",
+      id: "week-cad-jpy",
+      title: "CAD/JPY Market Movements",
       date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
     },
     {
-      id: "week-8",
-      title: "DeepSeek R1 vs Distil",
-      date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-9",
-      title: "UI design for chat",
+      id: "week-tech-rally",
+      title: "Tech Stock Rally Analysis",
       date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     },
+
+    // Last 30 Days
     {
-      id: "week-10",
-      title: "Auto-scaling Web App Setup",
-      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      id: "month-chf-jpy-policy",
+      title: "CHF/JPY Policy Impact Review",
+      date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-nasdaq-tech",
+      title: "NASDAQ Tech Sector Trends",
+      date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-btc-usd-trends",
+      title: "BTC/USD 30 Day Trend",
+      date: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-eur-usd-evaluation",
+      title: "EUR/USD 30 Day Evaluation",
+      date: new Date(Date.now() - 23 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-nyse-ba-volume",
+      title: "NYSE BA Volume Analysis",
+      date: new Date(Date.now() - 24 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-eth-2-performance",
+      title: "ETH 2.0 30 Day Performance",
+      date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-gbp-jpy-impact",
+      title: "GBP/JPY 30 Day Impact",
+      date: new Date(Date.now() - 26 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-sp500-sector",
+      title: "S&P 500 Sector Review",
+      date: new Date(Date.now() - 27 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-altcoin-market",
+      title: "Altcoin 30 Day Overview",
+      date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-aud-usd-review",
+      title: "AUD/USD 30 Day Review",
+      date: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-eth-usd-fluctuations",
+      title: "ETH/USD 30 Day Fluctuations",
+      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-gbp-usd-analysis",
+      title: "GBP/USD 35 Day Analysis",
+      date: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-tech-performance",
+      title: "Tech Stock 40 Day Trends",
+      date: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-eth-usd-price",
+      title: "ETH/USD 45 Day Price",
+      date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-usd-jpy-assessment",
+      title: "USD/JPY 47 Day Assessment",
+      date: new Date(Date.now() - 47 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-tech-stock-performance",
+      title: "Tech Stocks 42 Day Review",
+      date: new Date(Date.now() - 42 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-ltc-market-overview",
+      title: "Litecoin 43 Day Overview",
+      date: new Date(Date.now() - 43 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-usd-chf-sentiment",
+      title: "USD/CHF 49 Day Sentiment",
+      date: new Date(Date.now() - 49 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-eur-usd-evaluation",
+      title: "EUR/USD 30 Day Evaluation",
+      date: new Date(Date.now() - 23 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-nyse-ba-volume",
+      title: "NYSE BA Volume Analysis",
+      date: new Date(Date.now() - 24 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-eth-2-performance",
+      title: "ETH 2.0 30 Day Performance",
+      date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-gbp-jpy-impact",
+      title: "GBP/JPY 30 Day Impact",
+      date: new Date(Date.now() - 26 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-sp500-sector",
+      title: "S&P 500 Sector Review",
+      date: new Date(Date.now() - 27 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-altcoin-market",
+      title: "Altcoin 30 Day Overview",
+      date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-aud-usd-review",
+      title: "AUD/USD 30 Day Review",
+      date: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-eth-usd-fluctuations",
+      title: "ETH/USD 30 Day Fluctuations",
+      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-gbp-usd-analysis",
+      title: "GBP/USD 35 Day Analysis",
+      date: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-tech-performance",
+      title: "Tech Stock 40 Day Trends",
+      date: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-eth-usd-price",
+      title: "ETH/USD 45 Day Price",
+      date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-usd-jpy-assessment",
+      title: "USD/JPY 47 Day Assessment",
+      date: new Date(Date.now() - 47 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-tech-stock-performance",
+      title: "Tech Stocks 42 Day Review",
+      date: new Date(Date.now() - 42 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-ltc-market-overview",
+      title: "Litecoin 43 Day Overview",
+      date: new Date(Date.now() - 43 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "month-usd-chf-sentiment",
+      title: "USD/CHF 49 Day Sentiment",
+      date: new Date(Date.now() - 49 * 24 * 60 * 60 * 1000),
     },
   ]);
 

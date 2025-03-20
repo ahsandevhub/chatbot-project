@@ -45,7 +45,7 @@ const Signup = () => {
       await signUp(email.trim(), password, firstName, lastName);
       console.log("Signup successful!");
       toast.success(
-        "Account registered successfully! We've sent you an email please confirm before login.",
+        "Account registered successfully! We've sent you an email please confirm before login. It may take 1-5 minutes.",
         { position: "top-center" }
       );
       navigate("/login");

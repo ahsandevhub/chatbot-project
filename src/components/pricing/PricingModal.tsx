@@ -1,9 +1,11 @@
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import React from "react";
-import { X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import PricingPlan from "./PricingPlan";
 
 interface PricingModalProps {
@@ -16,7 +18,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
     {
       name: "Intern",
       price: "0",
-      description: "Ideal for anyone looking to dip their toes in the water and explore the capabilities of our AI Assistant.",
+      description:
+        "Ideal for anyone looking to dip their toes in the water and explore the capabilities of our AI Assistant.",
       features: [
         { name: "Credit Limits", value: "2 credits per day" },
         { name: "Asset Classes", value: "Equities" },
@@ -30,7 +33,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
     {
       name: "Equity Analyst",
       price: "6.99",
-      description: "The go-to plan for traders who need historical intraday stock data from the world's largest stock exchanges.",
+      description:
+        "The go-to plan for traders who need historical intraday stock data from the world's largest stock exchanges.",
       features: [
         { name: "Credit Limits", value: "1,000 credits per month" },
         { name: "Asset Classes", value: "Equities" },
@@ -44,7 +48,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
     {
       name: "Global Macro",
       price: "13.99",
-      description: "Our full-fledged plan for traders who need access to the entire enchilada.",
+      description:
+        "Our full-fledged plan for traders who need access to the entire enchilada.",
       features: [
         { name: "Credit Limits", value: "5,000 credits per month" },
         { name: "Asset Classes", value: "Equities, Crypto, Forex" },
@@ -64,21 +69,19 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-2">
-          <DialogTitle className="text-2xl text-center">Upgrade your plan</DialogTitle>
+      <DialogContent className="sm:max-w-[900px]">
+        <DialogHeader className="sm:p-6 sm:pb-2">
+          <DialogTitle className="text-2xl text-center">
+            Upgrade your plan
+          </DialogTitle>
         </DialogHeader>
-        
+
         <Tabs defaultValue="personal" className="w-full">
-          <div className="px-6">
-            <TabsList className="grid w-[200px] grid-cols-2 mx-auto">
-              <TabsTrigger value="personal">Personal</TabsTrigger>
-              <TabsTrigger value="business">Business</TabsTrigger>
-            </TabsList>
-          </div>
-          
-          <TabsContent value="personal" className="mt-4">
-            <div className="grid md:grid-cols-3 gap-6 p-6">
+          <TabsContent
+            value="personal"
+            className="mt-4 sm:max-h-[60vh] max-h-[70vh] overflow-y-auto"
+          >
+            <div className="grid md:grid-cols-3 gap-6 sm:p-6 px-4 sm:pt-0 pt-0">
               {plans.map((plan) => (
                 <PricingPlan
                   key={plan.name}
@@ -90,22 +93,6 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
                   onClick={() => handleSignUp(plan.name)}
                 />
               ))}
-            </div>
-            
-            <div className="p-6 bg-muted/50 flex flex-col items-center justify-center space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Need more capabilities for your business?
-              </p>
-              <button className="text-sm text-primary underline">
-                Contact Enterprise Sales
-              </button>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="business" className="h-[400px] flex items-center justify-center">
-            <div className="text-center">
-              <h3 className="text-lg font-medium">Business Plans</h3>
-              <p className="text-muted-foreground">Contact our sales team for custom pricing options</p>
             </div>
           </TabsContent>
         </Tabs>
