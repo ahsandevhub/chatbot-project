@@ -131,7 +131,7 @@ export function HeroSection({
           <div className="relative z-10 flex animate-fade-in opacity-0 [animation-delay:200ms] [animation-fill-mode:forwards] justify-center gap-4">
             <Button
               borderRadius="1.75rem"
-              className="bg-white dark:bg-slate-900 text-black dark:text-white border-neutral-200 dark:border-slate-800"
+              className="bg-black dark:bg-black text-white dark:text-white border-gray-200 dark:border-gray-800"
               onClick={() => navigate("/login")}
             >
               Start Free

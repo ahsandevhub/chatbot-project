@@ -93,34 +93,40 @@ export function Pricing({
         </div>
         <div className="mx-auto mt-12 max-w-xl lg:max-w-4xl">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <PricingTier
-              name="Intern"
-              price={0}
-              description="Ideal for anyone looking to dip their toes in the water and explore the capabilities of our AI Assistant."
-              action={{
-                label: "Sign Up",
-                href: "#",
-              }}
-            />
-            <PricingTier
-              name="Equity Analyst"
-              price={6.99}
-              highlight
-              description="The go-to plan for traders who need historical intraday stock data from the world's largest stock exchanges."
-              action={{
-                label: "Sign Up",
-                href: "#",
-              }}
-            />
-            <PricingTier
-              name="Global Macro"
-              price={13.99}
-              description="Our full-fledged plan for traders who need access to the entire enchilada."
-              action={{
-                label: "Sign Up",
-                href: "#",
-              }}
-            />
+            {[
+              {
+                name: "Intern",
+                price: 0,
+                description:
+                  "Ideal for anyone looking to dip their toes in the water and explore the capabilities of our AI Assistant.",
+                action: { label: "Sign Up", href: "#" },
+              },
+              {
+                name: "Equity Analyst",
+                price: 6.99,
+                highlight: true,
+                description:
+                  "The go-to plan for traders who need historical intraday stock data from the world's largest stock exchanges.",
+                action: { label: "Sign Up", href: "#" },
+              },
+              {
+                name: "Global Macro",
+                price: 13.99,
+                description:
+                  "Our full-fledged plan for traders who need access to the entire enchilada.",
+                action: { label: "Sign Up", href: "#" },
+              },
+            ].map((tier, index) => (
+              <PricingTier
+                key={index}
+                name={tier.name}
+                price={tier.price}
+                description={tier.description}
+                highlight={tier.highlight}
+                action={tier.action}
+                isOdd={index % 2 !== 0}
+              />
+            ))}
           </div>
         </div>
         <div className="mx-auto mt-16 max-w-6xl overflow-x-auto">
@@ -185,22 +191,26 @@ function PricingTier({
   description,
   highlight,
   action,
-}: PricingTierProps) {
+  isOdd,
+}: PricingTierProps & { isOdd?: boolean }) {
   return (
     <div
       className={cn(
-        "rounded-3xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:border-gray-300 hover:shadow-md bg-white dark:bg-gray-800",
-        highlight && "border-primary"
+        "rounded-3xl border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300 hover:border-gray-300 hover:shadow-md bg-white dark:bg-gray-800"
       )}
     >
-      <div className="sm:h-64">
+      <div
+        className={cn("txt", {
+          "h-56": !isOdd,
+        })}
+      >
         <h3 className="text-2xl font-bold mb-3">{name}</h3>
         <p className="text-gray-600 dark:text-gray-300 mb-6">{description}</p>
         <div className="flex items-end mb-6">
           <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
             ${price}
           </span>
-          <span className="text-gray-500 dark:text-gray-400 ml-1">/ month</span>
+          <span className="text-gray-400 ml-1">/ month</span>
         </div>
       </div>
       <Button
