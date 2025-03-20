@@ -30,7 +30,7 @@ const UserMenu: React.FC = () => {
   const handleLogout = async () => {
     await signOut();
     toast.success("Logged out successfully!", {
-      position: "top-center",
+      position: "bottom-center",
     });
   };
 
