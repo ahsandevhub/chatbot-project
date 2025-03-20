@@ -1,8 +1,8 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Moon } from "lucide-react";
-import { useTheme } from "next-themes";
 import React from "react";
 
 interface SettingsProps {
@@ -10,7 +10,7 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = () => {
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
 
   const formatDate = (dateString: string | null) => {
@@ -80,15 +80,6 @@ const Settings: React.FC<SettingsProps> = () => {
 
   return (
     <div className="sm:p-3 overflow-y-auto max-h-[80vh]">
-      <div className="flex flex-col space-y-1 mb-8">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Settings
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Customize your experience
-        </p>
-      </div>
-
       {user && (
         <div className="mb-8">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
@@ -148,18 +139,6 @@ const Settings: React.FC<SettingsProps> = () => {
                   user.last_sign_in_at ? formatDate(user.last_sign_in_at) : null
                 }
               />
-              {/* <InfoRow
-                label="Account Type"
-                value={user.is_sso_user ? "SSO User" : "Email User"}
-              />
-              <InfoRow
-                label="Authentication Provider"
-                value={
-                  Array.isArray(user.providers)
-                    ? user.providers.join(", ")
-                    : user.providers
-                }
-              /> */}
             </div>
           </div>
         </div>
@@ -182,13 +161,7 @@ const Settings: React.FC<SettingsProps> = () => {
                 </p>
               </div>
             </div>
-            <Switch
-              checked={theme === "dark"}
-              onCheckedChange={(checked) =>
-                setTheme(checked ? "dark" : "light")
-              }
-              className="data-[state=checked]:bg-green-600"
-            />
+            <Switch onCheckedChange={toggleTheme} />
           </div>
         </div>
       </div>

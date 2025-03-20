@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 
 interface AuthContextType {
   user: User | null;
-  isLoading: boolean; // Add loading state
+  isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (
     email: string,
@@ -25,7 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Initial loading state
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         data: { session },
       } = await supabase.auth.getSession();
       setUser(session?.user || null);
-      setIsLoading(false); // Session fetch complete
+      setIsLoading(false);
     };
 
     fetchSession();
@@ -41,9 +41,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user || null);
-        setIsLoading(false); // Auth state change complete
       }
     );
+
+    setIsLoading(false); // Set isLoading to false after initial fetch and listener setup
 
     return () => {
       authListener?.subscription.unsubscribe();
@@ -87,15 +88,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin + "/auth/callback" },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
+    setIsLoading(false);
     return { error };
   };
 
   const resetPassword = async (email: string) => {
     setIsLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/reset-password",
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     setIsLoading(false);
     if (error) throw error;
