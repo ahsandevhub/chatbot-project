@@ -1,28 +1,16 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Check, Minus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React from "react";
-
-interface PlanFeature {
-  name: string;
-  value: string | boolean;
-}
 
 interface PricingPlanProps {
   name: string;
   price: string;
   description: string;
-  features: PlanFeature[];
+  features: string[];
   isPopular?: boolean;
-  onClick?: () => void;
+  buttonText: string;
+  buttonDisabled: boolean;
 }
 
 const PricingPlan: React.FC<PricingPlanProps> = ({
@@ -31,59 +19,54 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
   description,
   features,
   isPopular = false,
-  onClick,
+  buttonText,
+  buttonDisabled,
 }) => {
   return (
-    <Card className={`w-full ${isPopular ? "border-primary shadow-md" : ""}`}>
-      <div className={`${!isPopular ? "md:h-[420px]" : ""}`}>
-        <CardHeader className="space-y-1">
+    <Card
+      className={`w-full px-4 border transition-transform duration-300 ${
+        isPopular
+          ? "border-gray-500 scale-105 z-10 px-3 bg-gray-100"
+          : "relative"
+      }`}
+    >
+      <CardHeader className="text-left">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl">{name}</CardTitle>
           {isPopular && (
-            <Badge className="w-fit mb-2" variant="default">
+            <Badge
+              className="border border-gray-500 text-gray-500 bg-transparent rounded-md px-2 py-1"
+              variant="outline"
+            >
               Popular
             </Badge>
           )}
-          <CardTitle className="text-xl">{name}</CardTitle>
-          <div className="flex items-baseline text-3xl font-bold">
-            ${price}
-            <span className="ml-1 text-sm font-normal text-muted-foreground">
-              /month
-            </span>
-          </div>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="space-y-2">
-            {features.map((feature, index) => (
-              <div key={index} className="flex items-center">
-                {typeof feature.value === "boolean" ? (
-                  feature.value ? (
-                    <Check className="mr-2 h-4 w-4 text-green-500" />
-                  ) : (
-                    <Minus className="mr-2 h-4 w-4 text-gray-300" />
-                  )
-                ) : (
-                  <span className="mr-2 h-4 w-4 flex items-center justify-center"></span>
-                )}
-                <div className="flex justify-between w-full">
-                  <span className="text-sm">{feature.name}</span>
-                  {typeof feature.value !== "boolean" && (
-                    <span className="text-sm font-medium">{feature.value}</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </div>
-      <CardFooter>
+        </div>
+        <div className="flex items-baseline text-3xl font-bold">
+          ${price}
+          <span className="ml-1 text-sm font-normal text-muted-foreground">
+            /month
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </CardHeader>
+      <div className="px-4 flex flex-col">
         <Button
-          variant={isPopular ? "default" : "outline"}
-          className="w-full"
-          onClick={onClick}
+          className={`w-full rounded-full ${
+            buttonDisabled ? "bg-gray-300 text-gray-600 cursor-not-allowed" : ""
+          }`}
+          disabled={buttonDisabled}
         >
-          Sign Up
+          {buttonText}
         </Button>
-      </CardFooter>
+      </div>
+      <CardContent className="space-y-2 p-4">
+        {features.map((feature, index) => (
+          <div key={index} className="flex items-center text-sm">
+            ✓ {feature}
+          </div>
+        ))}
+      </CardContent>
     </Card>
   );
 };

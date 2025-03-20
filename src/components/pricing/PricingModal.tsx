@@ -18,60 +18,54 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
     {
       name: "Intern",
       price: "0",
-      description:
-        "Ideal for anyone looking to dip their toes in the water and explore the capabilities of our AI Assistant.",
+      description: "Ideal for Beginners",
       features: [
-        { name: "Credit Limits", value: "2 credits per day" },
-        { name: "Asset Classes", value: "Equities" },
-        { name: "Stock Exchanges", value: "NASDAQ, NYSE" },
-        { name: "Extended Trading Hours", value: false },
-        { name: "Historical Data", value: "1 year" },
-        { name: "Intraday Data", value: false },
+        "Access to NASDAQ",
+        "Access to the New York Stock Exchange (NYSE)",
+        "Timeframes: Daily, Weekly, and Monthly",
+        "Up to 1 year of data",
       ],
       isPopular: false,
+      buttonText: "Your current plan",
+      buttonDisabled: true,
     },
     {
       name: "Equity Analyst",
       price: "6.99",
-      description:
-        "The go-to plan for traders who need historical intraday stock data from the world's largest stock exchanges.",
+      description: "Ideal for Stock Traders",
       features: [
-        { name: "Credit Limits", value: "1,000 credits per month" },
-        { name: "Asset Classes", value: "Equities" },
-        { name: "Stock Exchanges", value: "Top 5" },
-        { name: "Extended Trading Hours", value: true },
-        { name: "Historical Data", value: "3 years" },
-        { name: "Intraday Data", value: true },
+        "Everything in Intern",
+        "Access to the Shanghai Stock Exchange (SSE)",
+        "Access to the Tokyo Stock Exchange (TSE)",
+        "Access to the National Stock Exchange of India (NSE)",
+        "Additional Timeframes: 1m, 5m, 15m, 30m, 45m, 1H, 2H, and 4H",
+        "Up to 3 years of data",
       ],
       isPopular: true,
+      buttonText: "Get Equity Analyst",
+      buttonDisabled: false,
     },
     {
       name: "Global Macro",
       price: "13.99",
-      description:
-        "Our full-fledged plan for traders who need access to the entire enchilada.",
+      description: "Ideal for Traders who trade all markets",
       features: [
-        { name: "Credit Limits", value: "5,000 credits per month" },
-        { name: "Asset Classes", value: "Equities, Crypto, Forex" },
-        { name: "Stock Exchanges", value: "Top 10" },
-        { name: "Extended Trading Hours", value: true },
-        { name: "Historical Data", value: "5 years" },
-        { name: "Intraday Data", value: true },
+        "Everything in Equity Analyst",
+        "Access to 5 additional Exchanges (Euronext, HKEX, SZSE, TSX, and Tadawul)",
+        "Access to Crypto & Forex data",
+        "Up to 5 years of data",
       ],
       isPopular: false,
+      buttonText: "Get Global Macro",
+      buttonDisabled: false,
     },
   ];
 
-  const handleSignUp = (planName: string) => {
-    console.log(`Signed up for ${planName} plan`);
-    onOpenChange(false);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px]">
-        <DialogHeader className="sm:p-6 sm:pb-2">
-          <DialogTitle className="text-2xl text-center">
+      <DialogContent className="sm:max-w-6xl py-10">
+        <DialogHeader className="text-left">
+          <DialogTitle className="text-3xl text-center">
             Upgrade your plan
           </DialogTitle>
         </DialogHeader>
@@ -81,7 +75,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
             value="personal"
             className="mt-4 sm:max-h-[60vh] max-h-[70vh] overflow-y-auto"
           >
-            <div className="grid md:grid-cols-3 gap-6 sm:p-6 px-4 sm:pt-0 pt-0">
+            <div className="grid md:grid-cols-3 gap-0 px-4 sm:p-6 relative">
               {plans.map((plan) => (
                 <PricingPlan
                   key={plan.name}
@@ -90,7 +84,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
                   description={plan.description}
                   features={plan.features}
                   isPopular={plan.isPopular}
-                  onClick={() => handleSignUp(plan.name)}
+                  buttonText={plan.buttonText}
+                  buttonDisabled={plan.buttonDisabled}
                 />
               ))}
             </div>
