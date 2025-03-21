@@ -6,7 +6,12 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<void>;
   signOut: () => Promise<void>;
   googleSignIn: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<void>;
@@ -63,8 +68,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setSession(data.session);
   };
 
-  const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+  const signUp = async (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          firstName: firstName,
+          lastName: lastName,
+        },
+      },
+    });
     if (error) throw error;
     setUser(data.user);
     setSession(data.session);
