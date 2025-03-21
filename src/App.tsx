@@ -44,7 +44,7 @@ const ThemeSetter = () => {
     }
   }, [location.pathname, setTheme]);
 
-  return null; // This component doesn't render anything
+  return null;
 };
 
 const App = () => (

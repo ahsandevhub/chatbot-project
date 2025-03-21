@@ -1,4 +1,4 @@
-import { AuthError, User } from "@supabase/supabase-js";
+import { AuthError, Session, User } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -6,15 +6,11 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string
-  ) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   googleSignIn: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<void>;
+  session: Session | null; // Add session to the context
 }
 
 interface AuthProviderProps {
@@ -26,22 +22,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [session, setSession] = useState<Session | null>(null); // Add session state
 
   useEffect(() => {
     const fetchSession = async () => {
       const {
-        data: { session },
+        data: { session: initialSession },
+        error: sessionError,
       } = await supabase.auth.getSession();
-      console.log("Fetched Session on Load:", session);
-      setUser(session?.user || null);
+
+      if (sessionError) {
+        console.error("Error fetching initial session:", sessionError);
+      } else {
+        console.log("Initial session fetched:", initialSession);
+        setUser(initialSession?.user || null);
+        setSession(initialSession || null); // Set session
+      }
+      setIsLoading(false);
     };
 
     fetchSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        console.log("Auth State Changed:", session);
-        setUser(session?.user || null);
+      (event, currentSession) => {
+        console.log("Auth state changed:", event, currentSession);
+        setUser(currentSession?.user || null);
+        setSession(currentSession || null); // Update session
       }
     );
 
@@ -52,82 +58,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    if (error) {
+      console.error("Sign in error:", error);
+      setIsLoading(false);
+      throw error;
+    }
+    console.log("Sign in success:", data.session);
     setIsLoading(false);
-    if (error) throw error;
   };
 
-  const signUp = async (
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string
-  ) => {
+  const signUp = async (email: string, password: string) => {
     setIsLoading(true);
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { firstName, lastName } },
     });
-    setIsLoading(false);
-    if (error) throw error;
-
-    if (user) {
-      try {
-        let sessionResponse = null;
-        let accessToken = null;
-        const retries = 5; // Number of retry attempts
-
-        for (let i = 0; i < retries; i++) {
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay
-
-          sessionResponse = await supabase.auth.getSession();
-          accessToken = sessionResponse.data.session?.access_token;
-
-          if (accessToken) {
-            break; // Access token found, exit loop
-          }
-        }
-
-        console.log("Session Response:", sessionResponse);
-        console.log("Access Token:", accessToken);
-
-        if (!accessToken) {
-          console.error("Access token not available after signup.");
-          return;
-        }
-
-        const response = await fetch(
-          "https://rwbfjxwueaygxtyuwrvu.supabase.co/functions/v1/create_user_defaults",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${
-                import.meta.env.VITE_SUPABASE_SERVICE_ROLE
-              }`,
-            },
-            body: JSON.stringify({ user }),
-          }
-        );
-        const result = await response.json();
-        console.log("Edge Function result:", result);
-      } catch (err) {
-        console.error("Edge Function error:", err);
-      }
+    if (error) {
+      console.error("Sign up error:", error);
+      setIsLoading(false);
+      throw error;
     }
+    console.log("Sign up success:", data.session);
+    setIsLoading(false);
   };
 
   const signOut = async () => {
     setIsLoading(true);
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Sign out error:", error);
+    } else {
+      console.log("Signed out successfully");
+    }
     setUser(null);
+    setSession(null);
     setIsLoading(false);
   };
 
@@ -139,8 +107,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
+    if (error) {
+      console.error("Google sign in error:", error);
+      setIsLoading(false);
+      return { error };
+    }
+    console.log("Google sign in initiated successfully. Check callback.");
     setIsLoading(false);
-    return { error };
+    return { error: null };
   };
 
   const resetPassword = async (email: string) => {
@@ -148,8 +122,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
+    if (error) {
+      console.error("Reset password error:", error);
+      setIsLoading(false);
+      throw error;
+    }
+    console.log("Reset password email sent");
     setIsLoading(false);
-    if (error) throw error;
   };
 
   return (
@@ -162,6 +141,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         signOut,
         googleSignIn,
         resetPassword,
+        session, // Expose session
       }}
     >
       {children}

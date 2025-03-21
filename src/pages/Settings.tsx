@@ -3,7 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { Moon } from "lucide-react";
-import React from "react";
+import React, { useMemo } from "react";
 
 interface SettingsProps {
   onClose: () => void;
@@ -77,6 +77,8 @@ const Settings: React.FC<SettingsProps> = () => {
     }
     return "N/A";
   };
+
+  const isDarkMode = useMemo(() => theme === "dark", [theme]);
 
   return (
     <div className="sm:p-3 overflow-y-auto max-h-[80vh]">
@@ -161,7 +163,7 @@ const Settings: React.FC<SettingsProps> = () => {
                 </p>
               </div>
             </div>
-            <Switch onCheckedChange={toggleTheme} />
+            <Switch onCheckedChange={toggleTheme} defaultChecked={isDarkMode} />
           </div>
         </div>
       </div>
