@@ -9,7 +9,7 @@ serve(async (req) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', {
             headers: {
-                'Access-Control-Allow-Origin': 'https://stonk-hub.vercel.app', // Replace with your frontend's origin
+                'Access-Control-Allow-Origin': '*', // Replace with your frontend's origin
                 'Access-Control-Allow-Methods': 'POST, OPTIONS',
                 'Access-Control-Allow-Headers': 'Authorization, Content-Type',
             },
