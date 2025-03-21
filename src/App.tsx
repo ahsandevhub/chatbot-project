@@ -10,18 +10,17 @@ import Login from "./components/Login";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import Profile from "./components/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 import ResetPassword from "./components/ResetPassword";
 import Signup from "./components/Signup";
 import TermsAndServices from "./components/TermsAndServices";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
-import Chat from "./pages/Chat";
 import ChatIndex from "./pages/ChatIndex";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
-import Test from "./pages/Test";
 
 const queryClient = new QueryClient();
 
@@ -57,38 +56,29 @@ const App = () => (
           <AuthProvider>
             <ThemeSetter />
             <Routes>
+              <Route element={<PublicRoute />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+              </Route>
+
+              <Route element={<ProtectedRoute />}>
+                <Route
+                  path="/chat/*"
+                  element={
+                    <ChatProvider>
+                      <ChatIndex />
+                    </ChatProvider>
+                  }
+                />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
+
               <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/signup" element={<Signup />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-services" element={<TermsAndServices />} />
               <Route path="/auth/callback" element={<AuthRedirectHandler />} />
-              <Route element={<ProtectedRoute />}>
-                <Route
-                  path="/chat/*" // Match all chat routes
-                  element={
-                    <ChatProvider>
-                      <Routes>
-                        <Route index element={<ChatIndex />} />
-                        <Route path=":id" element={<Chat />} />
-                      </Routes>
-                    </ChatProvider>
-                  }
-                />
-                <Route path="/test" element={<Test />} />
-                <Route
-                  path="/settings"
-                  element={
-                    <Settings
-                      onClose={function (): void {
-                        throw new Error("Function not implemented.");
-                      }}
-                    />
-                  }
-                />
-              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

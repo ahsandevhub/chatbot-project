@@ -10,7 +10,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   googleSignIn: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<void>;
-  session: Session | null; // Add session to the context
+  session: Session | null;
 }
 
 interface AuthProviderProps {
@@ -22,22 +22,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [session, setSession] = useState<Session | null>(null); // Add session state
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
     const fetchSession = async () => {
       const {
         data: { session: initialSession },
-        error: sessionError,
       } = await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.error("Error fetching initial session:", sessionError);
-      } else {
-        console.log("Initial session fetched:", initialSession);
-        setUser(initialSession?.user || null);
-        setSession(initialSession || null); // Set session
-      }
+      setUser(initialSession?.user || null);
+      setSession(initialSession || null);
       setIsLoading(false);
     };
 
@@ -45,9 +38,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        console.log("Auth state changed:", event, currentSession);
-        setUser(currentSession?.user || null);
-        setSession(currentSession || null); // Update session
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          setUser(currentSession?.user || null);
+          setSession(currentSession || null);
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+          setSession(null);
+        }
       }
     );
 
@@ -62,38 +59,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email,
       password,
     });
-    if (error) {
-      console.error("Sign in error:", error);
-      setIsLoading(false);
-      throw error;
-    }
-    console.log("Sign in success:", data.session);
+    if (error) throw error;
+    setUser(data.user);
+    setSession(data.session);
     setIsLoading(false);
   };
 
   const signUp = async (email: string, password: string) => {
     setIsLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (error) {
-      console.error("Sign up error:", error);
-      setIsLoading(false);
-      throw error;
-    }
-    console.log("Sign up success:", data.session);
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+    setUser(data.user);
+    setSession(data.session);
     setIsLoading(false);
   };
 
   const signOut = async () => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Sign out error:", error);
-    } else {
-      console.log("Signed out successfully");
-    }
+    await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setIsLoading(false);
@@ -103,31 +86,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    if (error) {
-      console.error("Google sign in error:", error);
-      setIsLoading(false);
-      return { error };
-    }
-    console.log("Google sign in initiated successfully. Check callback.");
     setIsLoading(false);
-    return { error: null };
+    return { error };
   };
 
   const resetPassword = async (email: string) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) {
-      console.error("Reset password error:", error);
-      setIsLoading(false);
-      throw error;
-    }
-    console.log("Reset password email sent");
     setIsLoading(false);
   };
 
@@ -141,10 +110,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         signOut,
         googleSignIn,
         resetPassword,
-        session, // Expose session
+        session,
       }}
     >
-      {children}
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+          <div className="w-12 h-12 relative">
+            <div className="absolute w-full h-full border-4 border-gray-200 rounded-full"></div>
+            <div className="absolute w-full h-full border-4 border-t-gray-800 border-r-gray-800 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

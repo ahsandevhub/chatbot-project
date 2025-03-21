@@ -6,7 +6,7 @@ import { Moon } from "lucide-react";
 import React, { useMemo } from "react";
 
 interface SettingsProps {
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 const Settings: React.FC<SettingsProps> = () => {
