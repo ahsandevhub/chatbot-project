@@ -1,9 +1,15 @@
-Deno.serve(async (req) => {
-    const { email } = await req.json()
-    const data = {
-      message: `Hello ${email}!`,
-    }
-  
-    return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })
-  })
-  
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+
+Deno.serve(async (req: Request) => {
+
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+  );
+
+  // Get the session or user object
+  const authHeader = req.headers.get('Authorization')!;
+  const token = authHeader.replace('Bearer ', '');
+  const { data } = await supabaseClient.auth.getUser(token);
+
+})
