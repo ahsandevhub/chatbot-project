@@ -1,4 +1,3 @@
-// src/components/Signup.tsx
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeftIcon, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
@@ -48,6 +47,7 @@ const Signup = () => {
         "Account registered successfully! We've sent you an email please confirm before login. It may take 1-5 minutes.",
         { position: "top-center" }
       );
+      localStorage.setItem("runEdgeFunction", "true"); //set local storage variable.
       navigate("/login");
     } catch (error: unknown) {
       let message = "An unexpected error occurred.";

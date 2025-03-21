@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     );
 
-    setIsLoading(false); // Set isLoading to false after initial fetch and listener setup
+    setIsLoading(false);
 
     return () => {
       authListener?.subscription.unsubscribe();
@@ -60,22 +60,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
     if (error) throw error;
   };
-
-  // const signUp = async (
-  //   email: string,
-  //   password: string,
-  //   firstName: string,
-  //   lastName: string
-  // ) => {
-  //   setIsLoading(true);
-  //   const { error } = await supabase.auth.signUp({
-  //     email,
-  //     password,
-  //     options: { data: { firstName, lastName } },
-  //   });
-  //   setIsLoading(false);
-  //   if (error) throw error;
-  // };
 
   const signUp = async (
     email: string,
@@ -95,11 +79,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
     if (error) throw error;
 
-    // Trigger the Edge Function after successful sign-up
     if (user) {
       try {
-        const sessionResponse = await supabase.auth.getSession(); // Await the promise
-        const accessToken = sessionResponse.data.session?.access_token; // Access access_token safely
+        let sessionResponse = null;
+        let accessToken = null;
+        const retries = 5; // Number of retry attempts
+
+        for (let i = 0; i < retries; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay
+
+          sessionResponse = await supabase.auth.getSession();
+          accessToken = sessionResponse.data.session?.access_token;
+
+          if (accessToken) {
+            break; // Access token found, exit loop
+          }
+        }
+
+        console.log("Session Response:", sessionResponse);
+        console.log("Access Token:", accessToken);
 
         if (!accessToken) {
           console.error("Access token not available after signup.");
