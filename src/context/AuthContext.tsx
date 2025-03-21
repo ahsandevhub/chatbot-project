@@ -32,19 +32,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      console.log("Fetched Session on Load:", session);
       setUser(session?.user || null);
-      setIsLoading(false);
     };
 
     fetchSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        console.log("Auth State Changed:", session);
         setUser(session?.user || null);
       }
     );
-
-    setIsLoading(false);
 
     return () => {
       authListener?.subscription.unsubscribe();
@@ -110,7 +109,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${
+                import.meta.env.VITE_SUPABASE_SERVICE_ROLE
+              }`,
             },
             body: JSON.stringify({ user }),
           }
