@@ -54,7 +54,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    setIsLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -62,42 +61,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (error) throw error;
     setUser(data.user);
     setSession(data.session);
-    setIsLoading(false);
   };
 
   const signUp = async (email: string, password: string) => {
-    setIsLoading(true);
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
     setUser(data.user);
     setSession(data.session);
-    setIsLoading(false);
   };
 
   const signOut = async () => {
-    setIsLoading(true);
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    setIsLoading(false);
   };
 
   const googleSignIn = async () => {
-    setIsLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-    setIsLoading(false);
     return { error };
   };
 
   const resetPassword = async (email: string) => {
-    setIsLoading(true);
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    setIsLoading(false);
   };
 
   return (
@@ -113,16 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         session,
       }}
     >
-      {isLoading ? (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-          <div className="w-12 h-12 relative">
-            <div className="absolute w-full h-full border-4 border-gray-200 rounded-full"></div>
-            <div className="absolute w-full h-full border-4 border-t-gray-800 border-r-gray-800 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 };
