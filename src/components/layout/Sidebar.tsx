@@ -24,7 +24,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
 import PricingModal from "../pricing/PricingModal";
@@ -91,10 +91,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const isMobile = useIsMobile();
   const { theme } = useTheme();
 
-  const groupedConversations = groupConversationsByDate(conversations);
+  const groupedConversations = useMemo(
+    () => groupConversationsByDate(conversations),
+    [conversations]
+  );
+  const hasConversations = conversations && conversations.length > 0;
 
-  const handleNewChat = () => {
-    const newId = addConversation("New Chat");
+  const handleNewChat = async () => {
+    const newId = await addConversation("New Chat");
     setCurrentConversationId(newId);
     navigate(`/chat/${newId}`);
     if (isMobile) {
@@ -136,6 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     if (isMobile) {
       toggleSidebar();
     }
+    navigate(`/chat/${id}`);
   };
 
   return (
@@ -181,113 +186,123 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <ScrollArea className="flex-1">
           <div className="py-2 px-2 space-y-5">
-            {Object.entries(groupedConversations).map(
-              ([group, groupConversations]) =>
-                groupConversations.length > 0 && (
-                  <div key={group} className="space-y-1">
-                    <h3 className="px-3 text-xs font-medium text-muted-foreground mb-2">
-                      {group}
-                    </h3>
-                    <div className="space-y-1">
-                      {groupConversations.map((conversation) => (
-                        <div
-                          key={conversation.id}
-                          className={`flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors duration-200 hover:bg-accent ${
-                            currentConversationId === conversation.id
-                              ? "bg-accent"
-                              : ""
-                          }`}
-                          onMouseEnter={() => setHoveredChat(conversation.id)}
-                          onMouseLeave={() =>
-                            setHoveredChat(
-                              conversation.id === editingConversationId
-                                ? conversation.id
-                                : null
-                            )
-                          }
-                        >
-                          {editingConversationId === conversation.id ? (
-                            <div className="flex items-center gap-1 flex-1">
-                              <Input
-                                value={editingName}
-                                onChange={(e) => setEditingName(e.target.value)}
-                                onKeyDown={(e) =>
-                                  handleEditKeyDown(e, conversation.id)
-                                }
-                                className="h-7 py-1 flex-1"
-                                autoFocus
-                              />
-                              <button
-                                onClick={() => handleSaveEdit(conversation.id)}
-                                className="p-1 text-green-600 hover:bg-accent rounded"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="p-1 text-red-600 hover:bg-accent rounded"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <Link
-                                to={`/chat/${conversation.id}`}
-                                className="flex-1 truncate"
-                                onClick={() =>
-                                  handleConversationClick(conversation.id)
-                                }
-                              >
-                                <span className="truncate">
-                                  {conversation.title}
-                                </span>
-                              </Link>
+            {hasConversations ? (
+              Object.entries(groupedConversations).map(
+                ([group, groupConversations]) =>
+                  groupConversations.length > 0 && (
+                    <div key={group} className="space-y-1">
+                      <h3 className="px-3 text-xs font-medium text-muted-foreground mb-2">
+                        {group}
+                      </h3>
+                      <div className="space-y-1">
+                        {groupConversations.map((conversation) => (
+                          <div
+                            key={conversation.id}
+                            className={`flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors duration-200 hover:bg-accent ${
+                              currentConversationId === conversation.id
+                                ? "bg-accent"
+                                : ""
+                            }`}
+                            onMouseEnter={() => setHoveredChat(conversation.id)}
+                            onMouseLeave={() =>
+                              setHoveredChat(
+                                conversation.id === editingConversationId
+                                  ? conversation.id
+                                  : null
+                              )
+                            }
+                          >
+                            {editingConversationId === conversation.id ? (
+                              <div className="flex items-center gap-1 flex-1">
+                                <Input
+                                  value={editingName}
+                                  onChange={(e) =>
+                                    setEditingName(e.target.value)
+                                  }
+                                  onKeyDown={(e) =>
+                                    handleEditKeyDown(e, conversation.id)
+                                  }
+                                  className="h-7 py-1 flex-1"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() =>
+                                    handleSaveEdit(conversation.id)
+                                  }
+                                  className="p-1 text-green-600 hover:bg-accent rounded"
+                                >
+                                  <Check size={16} />
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="p-1 text-red-600 hover:bg-accent rounded"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <Link
+                                  to={`/chat/${conversation.id}`}
+                                  className="flex-1 truncate"
+                                  onClick={() =>
+                                    handleConversationClick(conversation.id)
+                                  }
+                                >
+                                  <span className="truncate">
+                                    {conversation.title}
+                                  </span>
+                                </Link>
 
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <button
-                                    className={`p-1 hover:bg-accent rounded ${
-                                      hoveredChat === conversation.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    } transition-opacity duration-200`}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <MoreHorizontal size={16} />
-                                  </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem
-                                    onClick={(e) =>
-                                      handleStartEditing(
-                                        conversation.id,
-                                        conversation.title,
-                                        e
-                                      )
-                                    }
-                                  >
-                                    <Pencil size={16} className="mr-2" />
-                                    Rename
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      deleteConversation(conversation.id)
-                                    }
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 size={16} className="mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </>
-                          )}
-                        </div>
-                      ))}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button
+                                      className={`p-1 hover:bg-accent rounded ${
+                                        hoveredChat === conversation.id
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      } transition-opacity duration-200`}
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <MoreHorizontal size={16} />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuItem
+                                      onClick={(e) =>
+                                        handleStartEditing(
+                                          conversation.id,
+                                          conversation.title,
+                                          e
+                                        )
+                                      }
+                                    >
+                                      <Pencil size={16} className="mr-2" />
+                                      Rename
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        deleteConversation(conversation.id)
+                                      }
+                                      className="text-red-600"
+                                    >
+                                      <Trash2 size={16} className="mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )
+                  )
+              )
+            ) : (
+              <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
+                No conversations yet. Start a new chat!
+              </div>
             )}
           </div>
         </ScrollArea>

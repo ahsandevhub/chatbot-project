@@ -1,32 +1,43 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+// src/context/ChatContext.tsx
+import { supabase } from "@/lib/supabaseClient";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 type Conversation = {
   id: string;
+  userId: string;
   title: string;
-  date: Date;
+  date: string;
 };
 
 type Message = {
   id: string;
+  conversationId: string;
   content: string;
-  sender: "user" | "assistant";
-  timestamp: Date;
+  sender: "user" | "assistant" | "ai"; // Added "ai" here
+  timestamp: string;
 };
 
 interface ChatContextType {
   conversations: Conversation[];
   currentConversationId: string | null;
   messages: Record<string, Message[]>;
-  isGeneratingResponse: Record<string, boolean>;
-  setCurrentConversationId: (id: string | null) => void;
-  addConversation: (title: string) => string;
+  addConversation: (title: string) => Promise<string>;
   addMessage: (
     conversationId: string,
     content: string,
-    sender: "user" | "assistant"
-  ) => void;
-  deleteConversation: (id: string) => void;
-  renameConversation: (id: string, newTitle: string) => void;
+    sender: "user" | "assistant" | "ai" // Added "ai" here
+  ) => Promise<void>;
+  deleteConversation: (id: string) => Promise<void>;
+  renameConversation: (id: string, newTitle: string) => Promise<void>;
+  setCurrentConversationId: (id: string | null) => void;
+  fetchMessages: (conversationId: string) => Promise<void>;
+  isGeneratingResponse: Record<string, boolean>;
   stopResponseGeneration: (conversationId: string) => void;
 }
 
@@ -35,301 +46,74 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [conversations, setConversations] = useState<Conversation[]>([
-    // Today
-    {
-      id: "today-tech-performance",
-      title: "Tech Stocks Performance Today",
-      date: new Date(),
-    },
-    {
-      id: "today-bitcoin-price",
-      title: "Bitcoin Price Movement Today",
-      date: new Date(),
-    },
-
-    // Yesterday
-    {
-      id: "yesterday-eur-usd",
-      title: "EUR/USD Yesterday's Performance",
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "yesterday-sp500-close",
-      title: "S&P 500 Close Yesterday",
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "yesterday-eth-staking",
-      title: "Ethereum Staking Rewards Update",
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "yesterday-gbp-jpy",
-      title: "GBP/JPY Sentiment Analysis",
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "yesterday-nyse-finance",
-      title: "NYSE Financial Sector Review",
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    },
-
-    // Last 7 Days
-    {
-      id: "week-altcoin-trends",
-      title: "Altcoin Market Trends Overview",
-      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-aud-usd-calendar",
-      title: "AUD/USD Weekly Economic Calendar",
-      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-tech-earnings",
-      title: "Tech Earnings for the Week",
-      date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-defi-tvl",
-      title: "Defi TVL Growth Report",
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-cad-jpy",
-      title: "CAD/JPY Market Movements",
-      date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "week-tech-rally",
-      title: "Tech Stock Rally Analysis",
-      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    },
-
-    // Last 30 Days
-    {
-      id: "month-chf-jpy-policy",
-      title: "CHF/JPY Policy Impact Review",
-      date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-nasdaq-tech",
-      title: "NASDAQ Tech Sector Trends",
-      date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-btc-usd-trends",
-      title: "BTC/USD 30 Day Trend",
-      date: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-eur-usd-evaluation",
-      title: "EUR/USD 30 Day Evaluation",
-      date: new Date(Date.now() - 23 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-nyse-ba-volume",
-      title: "NYSE BA Volume Analysis",
-      date: new Date(Date.now() - 24 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-eth-2-performance",
-      title: "ETH 2.0 30 Day Performance",
-      date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-gbp-jpy-impact",
-      title: "GBP/JPY 30 Day Impact",
-      date: new Date(Date.now() - 26 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-sp500-sector",
-      title: "S&P 500 Sector Review",
-      date: new Date(Date.now() - 27 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-altcoin-market",
-      title: "Altcoin 30 Day Overview",
-      date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-aud-usd-review",
-      title: "AUD/USD 30 Day Review",
-      date: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-eth-usd-fluctuations",
-      title: "ETH/USD 30 Day Fluctuations",
-      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-gbp-usd-analysis",
-      title: "GBP/USD 35 Day Analysis",
-      date: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-tech-performance",
-      title: "Tech Stock 40 Day Trends",
-      date: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-eth-usd-price",
-      title: "ETH/USD 45 Day Price",
-      date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-usd-jpy-assessment",
-      title: "USD/JPY 47 Day Assessment",
-      date: new Date(Date.now() - 47 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-tech-stock-performance",
-      title: "Tech Stocks 42 Day Review",
-      date: new Date(Date.now() - 42 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-ltc-market-overview",
-      title: "Litecoin 43 Day Overview",
-      date: new Date(Date.now() - 43 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-usd-chf-sentiment",
-      title: "USD/CHF 49 Day Sentiment",
-      date: new Date(Date.now() - 49 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-eur-usd-evaluation",
-      title: "EUR/USD 30 Day Evaluation",
-      date: new Date(Date.now() - 23 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-nyse-ba-volume",
-      title: "NYSE BA Volume Analysis",
-      date: new Date(Date.now() - 24 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-eth-2-performance",
-      title: "ETH 2.0 30 Day Performance",
-      date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-gbp-jpy-impact",
-      title: "GBP/JPY 30 Day Impact",
-      date: new Date(Date.now() - 26 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-sp500-sector",
-      title: "S&P 500 Sector Review",
-      date: new Date(Date.now() - 27 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-altcoin-market",
-      title: "Altcoin 30 Day Overview",
-      date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-aud-usd-review",
-      title: "AUD/USD 30 Day Review",
-      date: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-eth-usd-fluctuations",
-      title: "ETH/USD 30 Day Fluctuations",
-      date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-gbp-usd-analysis",
-      title: "GBP/USD 35 Day Analysis",
-      date: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-tech-performance",
-      title: "Tech Stock 40 Day Trends",
-      date: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-eth-usd-price",
-      title: "ETH/USD 45 Day Price",
-      date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-usd-jpy-assessment",
-      title: "USD/JPY 47 Day Assessment",
-      date: new Date(Date.now() - 47 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-tech-stock-performance",
-      title: "Tech Stocks 42 Day Review",
-      date: new Date(Date.now() - 42 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-ltc-market-overview",
-      title: "Litecoin 43 Day Overview",
-      date: new Date(Date.now() - 43 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: "month-usd-chf-sentiment",
-      title: "USD/CHF 49 Day Sentiment",
-      date: new Date(Date.now() - 49 * 24 * 60 * 60 * 1000),
-    },
-  ]);
-
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<
     string | null
   >(null);
-
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
-
   const [isGeneratingResponse, setIsGeneratingResponse] = useState<
     Record<string, boolean>
   >({});
-  const [streamingIntervals, setStreamingIntervals] = useState<
-    Record<string, number>
-  >({});
 
-  const addConversation = (title: string): string => {
-    const id = `new-${Date.now()}`;
-    const newConversation: Conversation = {
-      id,
-      title,
-      date: new Date(),
+  useEffect(() => {
+    const fetchConversations = async () => {
+      const { data, error } = await supabase.from("conversations").select("*");
+      if (!error && data) setConversations(data);
     };
 
+    fetchConversations();
+  }, []);
+
+  const addConversation = async (title: string): Promise<string> => {
+    const { data, error } = await supabase
+      .from("conversations")
+      .insert([
+        { title, date: new Date().toISOString(), userId: "your-user-id" },
+      ])
+      .select("id");
+
+    if (error) throw error;
+    const newConversation = {
+      id: data[0].id,
+      title,
+      date: new Date().toISOString(),
+      userId: "your-user-id",
+    };
     setConversations((prev) => [newConversation, ...prev]);
-    setMessages((prev) => ({
+    return newConversation.id;
+  };
+
+  const addMessage = async (
+    conversationId: string,
+    content: string,
+    sender: "user" | "assistant" | "ai" // Added "ai" here
+  ) => {
+    setIsGeneratingResponse((prev) => ({
       ...prev,
-      [id]: [],
+      [conversationId]: sender === "user",
     }));
 
-    return id;
-  };
+    const newMessage = {
+      id: `msg-${Date.now()}`,
+      conversationId,
+      content,
+      sender,
+      timestamp: new Date().toISOString(),
+    };
 
-  const deleteConversation = (id: string) => {
-    setConversations((prev) => prev.filter((conv) => conv.id !== id));
-    const newMessages = { ...messages };
-    delete newMessages[id];
-    setMessages(newMessages);
-  };
-
-  const renameConversation = (id: string, newTitle: string) => {
-    setConversations((prevConversations) => {
-      return prevConversations.map((conversation) =>
-        conversation.id === id
-          ? { ...conversation, title: newTitle }
-          : conversation
-      );
-    });
-  };
-
-  const stopResponseGeneration = (conversationId: string) => {
-    if (streamingIntervals[conversationId]) {
-      clearInterval(streamingIntervals[conversationId]);
-
-      const newStreamingIntervals = { ...streamingIntervals };
-      delete newStreamingIntervals[conversationId];
-      setStreamingIntervals(newStreamingIntervals);
+    const { error } = await supabase.from("messages").insert([newMessage]);
+    if (error) {
+      setIsGeneratingResponse((prev) => ({
+        ...prev,
+        [conversationId]: false,
+      }));
+      throw error;
     }
+
+    setMessages((prev) => ({
+      ...prev,
+      [conversationId]: [...(prev[conversationId] || []), newMessage],
+    }));
 
     setIsGeneratingResponse((prev) => ({
       ...prev,
@@ -337,109 +121,44 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
     }));
   };
 
-  const addMessage = (
-    conversationId: string,
-    content: string,
-    sender: "user" | "assistant"
-  ) => {
-    const newMessage: Message = {
-      id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      content,
-      sender,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => ({
-      ...prev,
-      [conversationId]: [...(prev[conversationId] || []), newMessage],
-    }));
-
-    if (sender === "user" && !isGeneratingResponse[conversationId]) {
-      setIsGeneratingResponse((prev) => ({
-        ...prev,
-        [conversationId]: true,
-      }));
-
-      const dummyResponses = [
-        "I understand your question. Let me think about it...",
-        "Based on the information provided, I can help you with that.",
-        "Here's what I found about your query...",
-        "That's an interesting question! Here's my response...",
-      ];
-
-      const response =
-        dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
-      let displayedResponse = "";
-
-      const streamResponse = (fullResponse: string) => {
-        let i = 0;
-        const streamingMessageId = `msg-streaming-${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 9)}`;
-
-        setMessages((prev) => {
-          const conversationMessages = [...(prev[conversationId] || [])];
-          const streamingMessage: Message = {
-            id: streamingMessageId,
-            content: "",
-            sender: "assistant",
-            timestamp: new Date(),
-          };
-          conversationMessages.push(streamingMessage);
-
-          return {
-            ...prev,
-            [conversationId]: conversationMessages,
-          };
-        });
-
-        const interval = setInterval(() => {
-          if (i < fullResponse.length) {
-            displayedResponse += fullResponse[i];
-
-            setMessages((prev) => {
-              const conversationMessages = [...(prev[conversationId] || [])];
-
-              const streamingIndex = conversationMessages.findIndex(
-                (m) => m.id === streamingMessageId
-              );
-
-              if (streamingIndex >= 0) {
-                conversationMessages[streamingIndex] = {
-                  ...conversationMessages[streamingIndex],
-                  content: displayedResponse,
-                };
-              }
-
-              return {
-                ...prev,
-                [conversationId]: conversationMessages,
-              };
-            });
-
-            i++;
-          } else {
-            clearInterval(interval);
-
-            const newStreamingIntervals = { ...streamingIntervals };
-            delete newStreamingIntervals[conversationId];
-            setStreamingIntervals(newStreamingIntervals);
-
-            setIsGeneratingResponse((prev) => ({
-              ...prev,
-              [conversationId]: false,
-            }));
-          }
-        }, 50);
-
-        setStreamingIntervals((prev) => ({
-          ...prev,
-          [conversationId]: interval as unknown as number,
-        }));
-      };
-
-      setTimeout(() => streamResponse(response), 500);
+  const deleteConversation = async (id: string) => {
+    await supabase.from("messages").delete().eq("conversationId", id);
+    await supabase.from("conversations").delete().eq("id", id);
+    setConversations((prev) => prev.filter((conv) => conv.id !== id));
+    if (currentConversationId === id) {
+      setCurrentConversationId(null);
     }
+  };
+
+  const renameConversation = async (id: string, newTitle: string) => {
+    await supabase
+      .from("conversations")
+      .update({ title: newTitle })
+      .eq("id", id);
+    setConversations((prev) =>
+      prev.map((conv) => (conv.id === id ? { ...conv, title: newTitle } : conv))
+    );
+  };
+
+  const fetchMessages = async (conversationId: string) => {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversationId", conversationId)
+      .order("timestamp", { ascending: true });
+
+    if (!error && data) {
+      setMessages((prev) => ({ ...prev, [conversationId]: data }));
+    } else if (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
+  const stopResponseGeneration = (conversationId: string) => {
+    setIsGeneratingResponse((prev) => ({
+      ...prev,
+      [conversationId]: false,
+    }));
   };
 
   return (
@@ -448,12 +167,13 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         conversations,
         currentConversationId,
         messages,
-        isGeneratingResponse,
-        setCurrentConversationId,
         addConversation,
         addMessage,
         deleteConversation,
         renameConversation,
+        setCurrentConversationId,
+        fetchMessages,
+        isGeneratingResponse,
         stopResponseGeneration,
       }}
     >
@@ -464,7 +184,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
 
 export const useChat = (): ChatContextType => {
   const context = useContext(ChatContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useChat must be used within a ChatProvider");
   }
   return context;

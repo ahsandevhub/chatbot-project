@@ -201,7 +201,7 @@ function PricingTier({
     >
       <div
         className={cn("txt", {
-          "h-56": !isOdd,
+          "md:h-56": !isOdd,
         })}
       >
         <h3 className="text-2xl font-bold mb-3">{name}</h3>

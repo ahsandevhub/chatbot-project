@@ -61,6 +61,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (error) throw error;
   };
 
+  // const signUp = async (
+  //   email: string,
+  //   password: string,
+  //   firstName: string,
+  //   lastName: string
+  // ) => {
+  //   setIsLoading(true);
+  //   const { error } = await supabase.auth.signUp({
+  //     email,
+  //     password,
+  //     options: { data: { firstName, lastName } },
+  //   });
+  //   setIsLoading(false);
+  //   if (error) throw error;
+  // };
+
   const signUp = async (
     email: string,
     password: string,
@@ -68,13 +84,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     lastName: string
   ) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { firstName, lastName } },
     });
     setIsLoading(false);
     if (error) throw error;
+
+    // Trigger the Edge Function after successful sign-up
+    if (user) {
+      try {
+        const sessionResponse = await supabase.auth.getSession(); // Await the promise
+        const accessToken = sessionResponse.data.session?.access_token; // Access access_token safely
+
+        if (!accessToken) {
+          console.error("Access token not available after signup.");
+          return;
+        }
+
+        const response = await fetch(
+          "https://rwbfjxwueaygxtyuwrvu.supabase.co/functions/v1/create_user_defaults",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ user }),
+          }
+        );
+        const result = await response.json();
+        console.log("Edge Function result:", result);
+      } catch (err) {
+        console.error("Edge Function error:", err);
+      }
+    }
   };
 
   const signOut = async () => {

@@ -51,35 +51,48 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <TooltipProvider>
-        <ChatProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <ThemeSetter /> {/* Add the ThemeSetter component */}
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-services" element={<TermsAndServices />} />
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <ThemeSetter />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-services" element={<TermsAndServices />} />
+              <Route path="/auth/callback" element={<AuthRedirectHandler />} />
+              <Route element={<ProtectedRoute />}>
                 <Route
-                  path="/auth/callback"
-                  element={<AuthRedirectHandler />}
+                  path="/chat/*" // Match all chat routes
+                  element={
+                    <ChatProvider>
+                      <Routes>
+                        <Route index element={<ChatIndex />} />
+                        <Route path=":id" element={<Chat />} />
+                      </Routes>
+                    </ChatProvider>
+                  }
                 />
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/chat" element={<ChatIndex />} />
-                  <Route path="/test" element={<Test />} />
-                  <Route path="/chat/:id" element={<Chat />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
-          </BrowserRouter>
-        </ChatProvider>
+                <Route path="/test" element={<Test />} />
+                <Route
+                  path="/settings"
+                  element={
+                    <Settings
+                      onClose={function (): void {
+                        throw new Error("Function not implemented.");
+                      }}
+                    />
+                  }
+                />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

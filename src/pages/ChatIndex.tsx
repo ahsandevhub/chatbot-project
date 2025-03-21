@@ -1,3 +1,5 @@
+// src/pages/ChatIndex.tsx
+import { supabase } from "@/lib/supabaseClient";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/layout/Header";
@@ -7,14 +9,13 @@ import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/use-mobile";
 
 const ChatIndex: React.FC = () => {
-  const { conversations, addConversation, addMessage } = useChat();
+  const { addConversation, addMessage } = useChat();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
-  const temporaryConversationId = "temp-home-page"; // Temporary ID for the home page
+  const temporaryConversationId = "temp-home-page";
 
   useEffect(() => {
-    // Auto-close sidebar on mobile
     if (isMobile) {
       setIsSidebarOpen(false);
     } else {
@@ -22,16 +23,46 @@ const ChatIndex: React.FC = () => {
     }
   }, [isMobile]);
 
-  const handleSendMessage = (content: string) => {
-    // Create a new conversation with the first few words as the title
-    const title = content.split(" ").slice(0, 4).join(" ") + "...";
-    const newId = addConversation(title);
+  const handleSendMessage = async (content: string) => {
+    try {
+      const title = content.split(" ").slice(0, 4).join(" ") + "...";
+      const newId = await addConversation(title);
 
-    // Add the message to this conversation
-    addMessage(newId, content, "user");
+      addMessage(newId, content, "user");
 
-    // Navigate to the new conversation
-    navigate(`/chat/${newId}`);
+      await supabase
+        .from("conversations")
+        .insert([{ id: newId, title, date: new Date().toISOString() }]);
+
+      await supabase.from("messages").insert([
+        {
+          id: `msg-${Date.now()}`,
+          conversationId: newId,
+          content,
+          sender: "user",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+      // Simulate a dummy response from the AI
+      const dummyResponse = `Dummy response: ${content}`;
+      setTimeout(async () => {
+        addMessage(newId, dummyResponse, "ai");
+        await supabase.from("messages").insert([
+          {
+            id: `msg-${Date.now() + 1}`,
+            conversationId: newId,
+            content: dummyResponse,
+            sender: "ai",
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+        navigate(`/chat/${newId}`);
+      }, 1000); // Simulate a 1-second delay for the AI response
+    } catch (error) {
+      console.error("Error sending message:", error);
+      // Optionally, show an error message to the user
+    }
   };
 
   const toggleSidebar = () => {

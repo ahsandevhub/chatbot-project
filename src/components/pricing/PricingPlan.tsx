@@ -26,7 +26,7 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
     <Card
       className={`w-full px-4 border transition-transform duration-300 ${
         isPopular
-          ? "border-gray-500 scale-105 z-10 px-3 bg-gray-100"
+          ? "border-gray-500 pb-6 scale-105 z-10 px-3 bg-gray-100"
           : "relative"
       }`}
     >
@@ -45,7 +45,7 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
         <div className="flex items-baseline text-3xl font-bold">
           ${price}
           <span className="ml-1 text-sm font-normal text-muted-foreground">
-            /month
+            / month
           </span>
         </div>
         <p className="text-sm text-muted-foreground">{description}</p>
