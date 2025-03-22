@@ -24,9 +24,9 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
 }) => {
   return (
     <Card
-      className={`w-full px-4 border transition-transform duration-300 ${
+      className={`w-full md:px-4 border transition-transform duration-300 pb-10 ${
         isPopular
-          ? "border-gray-500 pb-[60px] scale-105 z-10 px-3 bg-gray-100"
+          ? "border-gray-500 md:pb-[80px] md:scale-105 z-10 px-3 bg-gray-100"
           : "relative"
       }`}
     >

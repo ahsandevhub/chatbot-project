@@ -17,6 +17,7 @@ import TermsAndServices from "./components/TermsAndServices";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import Chat from "./pages/Chat";
 import ChatIndex from "./pages/ChatIndex";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -64,10 +65,18 @@ const App = () => (
 
               <Route element={<ProtectedRoute />}>
                 <Route
-                  path="/chat/*"
+                  path="/chat"
                   element={
                     <ChatProvider>
                       <ChatIndex />
+                    </ChatProvider>
+                  }
+                />
+                <Route
+                  path="/chat/:id"
+                  element={
+                    <ChatProvider>
+                      <Chat />
                     </ChatProvider>
                   }
                 />

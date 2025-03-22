@@ -9,8 +9,7 @@ interface ChatContainerProps {
 }
 
 const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
-  const { messages, addMessage, isGeneratingResponse, fetchMessages } =
-    useChat();
+  const { messages, addMessage, isGeneratingResponse } = useChat();
   const { theme } = useTheme();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -29,9 +28,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversationMessages]);
 
-  useEffect(() => {
-    fetchMessages(conversationId);
-  }, [conversationId, fetchMessages]);
+  console.log("Conversation messages:", conversationMessages);
 
   return (
     <div className="flex flex-col h-full w-full bg-chat-background">

@@ -5,7 +5,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import React from "react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
+import React, { useEffect, useState } from "react";
 import PricingPlan from "./PricingPlan";
 
 interface PricingModalProps {
@@ -14,6 +16,26 @@ interface PricingModalProps {
 }
 
 const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
+  const { user } = useAuth();
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchCurrentPlan = async () => {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) console.error("Error fetching subscription:", error);
+      else setCurrentPlan(data?.plan || "intern");
+    };
+
+    fetchCurrentPlan();
+  }, [user]);
+
   const plans = [
     {
       name: "Intern",
@@ -26,8 +48,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
         "Up to 1 year of data",
       ],
       isPopular: false,
-      buttonText: "Your current plan",
-      buttonDisabled: true,
+      buttonText: currentPlan === "intern" ? "Your current plan" : "Get Intern",
+      buttonDisabled: currentPlan === "intern",
     },
     {
       name: "Equity Analyst",
@@ -42,8 +64,11 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
         "Up to 3 years of data",
       ],
       isPopular: true,
-      buttonText: "Get Equity Analyst",
-      buttonDisabled: false,
+      buttonText:
+        currentPlan === "equity_analyst"
+          ? "Your current plan"
+          : "Get Equity Analyst",
+      buttonDisabled: currentPlan === "equity_analyst",
     },
     {
       name: "Global Macro",
@@ -56,8 +81,11 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
         "Up to 5 years of data",
       ],
       isPopular: false,
-      buttonText: "Get Global Macro",
-      buttonDisabled: false,
+      buttonText:
+        currentPlan === "global_macro"
+          ? "Your current plan"
+          : "Get Global Macro",
+      buttonDisabled: currentPlan === "global_macro",
     },
   ];
 
@@ -65,7 +93,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-6xl py-10">
         <DialogHeader className="text-left">
-          <DialogTitle className="text-3xl text-center">
+          <DialogTitle className="md:text-3xl text-2xl text-center">
             Upgrade your plan
           </DialogTitle>
         </DialogHeader>
@@ -73,9 +101,9 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
         <Tabs defaultValue="personal" className="w-full">
           <TabsContent
             value="personal"
-            className="mt-4 sm:max-h-[60vh] max-h-[70vh] overflow-y-auto"
+            className="mt-4 sm:max-h-[80vh] max-h-[80vh] overflow-y-auto"
           >
-            <div className="grid md:grid-cols-3 gap-0 px-4 sm:p-6 relative">
+            <div className="grid md:grid-cols-3 md:gap-0 gap-10 md:px-4 px-2 md:p-6 relative">
               {plans.map((plan) => (
                 <PricingPlan
                   key={plan.name}

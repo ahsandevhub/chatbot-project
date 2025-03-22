@@ -1,36 +1,49 @@
-
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Navigate } from "react-router-dom";
-import Sidebar from "../components/layout/Sidebar";
-import Header from "../components/layout/Header";
+import React, { useEffect, useState } from "react";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import ChatContainer from "../components/layout/ChatContainer";
+import Header from "../components/layout/Header";
+import Sidebar from "../components/layout/Sidebar";
 import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/use-mobile";
 
 const Chat: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { conversations, setCurrentConversationId } = useChat();
+  const { chats, setCurrentChatId, fetchMessages } = useChat();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
-  
+  const [hasFetchedMessages, setHasFetchedMessages] = useState(false); // Track message fetching
+
   useEffect(() => {
     if (id) {
-      const conversationExists = conversations.some(c => c.id === id);
-      if (!conversationExists) {
+      const chatExists = chats.some((c) => c.id === id);
+      if (!chatExists) {
         navigate("/");
         return;
       }
-      
-      setCurrentConversationId(id);
+
+      setCurrentChatId(id);
+
+      // Fetch messages only if they haven't been fetched yet for this id
+      if (!hasFetchedMessages) {
+        fetchMessages(id);
+        setHasFetchedMessages(true);
+      }
     }
-    
+
     // Auto-close sidebar on mobile
     if (isMobile) {
       setIsSidebarOpen(false);
     }
-  }, [id, conversations, navigate, setCurrentConversationId, isMobile]);
-  
+  }, [
+    id,
+    navigate,
+    setCurrentChatId,
+    fetchMessages,
+    isMobile,
+    hasFetchedMessages,
+  ]);
+
   if (!id) {
     return <Navigate to="/" />;
   }
@@ -38,14 +51,14 @@ const Chat: React.FC = () => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-  
+
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      <div 
+      <div
         className={`flex flex-col flex-1 transition-all duration-300 w-full`}
-        style={{ 
-          marginLeft: !isMobile && isSidebarOpen ? '260px' : '0'
+        style={{
+          marginLeft: !isMobile && isSidebarOpen ? "260px" : "0",
         }}
       >
         <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />

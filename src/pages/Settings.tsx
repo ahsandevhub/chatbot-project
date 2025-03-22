@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import { supabase } from "@/lib/supabaseClient";
 import { Moon } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 interface SettingsProps {
   onClose?: () => void;
@@ -12,11 +14,40 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = () => {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
+  const [subscription, setSubscription] = useState<any>(null);
+  const [credits, setCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchSubscription = async () => {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) console.error("Subscription fetch error:", error);
+      else setSubscription(data);
+    };
+
+    const fetchCredits = async () => {
+      const { data, error } = await supabase
+        .from("user_credits")
+        .select("credits_available")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) console.error("Credits fetch error:", error);
+      else setCredits(data?.credits_available);
+    };
+
+    fetchSubscription();
+    fetchCredits();
+  }, [user]);
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) {
-      return "N/A";
-    }
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -24,28 +55,6 @@ const Settings: React.FC<SettingsProps> = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
-
-  const getAvatarFallback = () => {
-    if (user?.user_metadata?.avatar_url) {
-      return (
-        <img
-          src={user.user_metadata.avatar_url}
-          alt="User Avatar"
-          className="rounded-full h-14 w-14 object-cover border border-gray-200 shadow-sm"
-        />
-      );
-    }
-    if (user?.user_metadata?.name) {
-      return user.user_metadata.name.charAt(0).toUpperCase();
-    }
-    if (user?.user_metadata?.firstName) {
-      return user.user_metadata.firstName.charAt(0).toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
-    return "😊";
   };
 
   const InfoRow = ({
@@ -65,20 +74,35 @@ const Settings: React.FC<SettingsProps> = () => {
     </div>
   );
 
-  const getUserDisplayName = () => {
-    if (user?.user_metadata?.name) {
-      return user.user_metadata.name;
+  const isDarkMode = useMemo(() => theme === "dark", [theme]);
+
+  const getAvatarFallback = () => {
+    if (user?.user_metadata?.avatar_url) {
+      return (
+        <img
+          src={user.user_metadata.avatar_url}
+          alt="User Avatar"
+          className="rounded-full h-14 w-14 object-cover border border-gray-200 shadow-sm"
+        />
+      );
     }
-    if (user?.user_metadata?.firstName && user?.user_metadata?.lastName) {
-      return `${user.user_metadata.firstName} ${user.user_metadata.lastName}`;
-    }
-    if (user?.user_metadata?.firstName) {
-      return user.user_metadata.firstName;
-    }
-    return "N/A";
+    const initials =
+      user?.user_metadata?.name?.charAt(0) ||
+      user?.user_metadata?.firstName?.charAt(0) ||
+      user?.email?.charAt(0) ||
+      "😊";
+    return initials.toUpperCase();
   };
 
-  const isDarkMode = useMemo(() => theme === "dark", [theme]);
+  const getUserDisplayName = () => {
+    return (
+      user?.user_metadata?.name ||
+      `${user?.user_metadata?.firstName || ""} ${
+        user?.user_metadata?.lastName || ""
+      }`.trim() ||
+      "N/A"
+    );
+  };
 
   return (
     <div className="sm:p-3 overflow-y-auto max-h-[80vh]">
@@ -104,14 +128,10 @@ const Settings: React.FC<SettingsProps> = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {user.email}
               </p>
-              {user.phone && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {user.phone}
-                </p>
-              )}
             </div>
           </div>
 
+          {/* ACCOUNT DETAILS */}
           <div className="mt-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
             <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
               Account Details
@@ -119,10 +139,6 @@ const Settings: React.FC<SettingsProps> = () => {
             <div className="space-y-1">
               <InfoRow label="User ID" value={user.id} />
               <InfoRow label="Email" value={user.email} />
-              <InfoRow label="Phone" value={user.phone} />
-              {/* <InfoRow label="Instance ID" value={user.instance_id} /> */}
-              <InfoRow label="Audience" value={user.aud} />
-              <InfoRow label="Role" value={user.role} />
               <InfoRow
                 label="Account Created"
                 value={user.created_at ? formatDate(user.created_at) : null}
@@ -143,9 +159,43 @@ const Settings: React.FC<SettingsProps> = () => {
               />
             </div>
           </div>
+
+          {/* SUBSCRIPTION & CREDITS */}
+          <div className="mt-6 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+              Subscription & Credits
+            </h4>
+            <div className="space-y-1">
+              <InfoRow
+                label="Subscription Plan"
+                value={subscription?.plan || "Free"}
+              />
+              <InfoRow
+                label="Status"
+                value={subscription?.status || "Inactive"}
+              />
+              <InfoRow
+                label="Current Period Starts"
+                value={formatDate(subscription?.current_period_start)}
+              />
+              <InfoRow
+                label="Current Period Ends"
+                value={formatDate(subscription?.current_period_end)}
+              />
+              <InfoRow
+                label="Credits Limit"
+                value={subscription?.credits_limit}
+              />
+              <InfoRow
+                label="Available Credits"
+                value={credits?.toString() || "0"}
+              />
+            </div>
+          </div>
         </div>
       )}
 
+      {/* APPEARANCE SETTINGS */}
       <div>
         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
           APPEARANCE
@@ -166,12 +216,6 @@ const Settings: React.FC<SettingsProps> = () => {
             <Switch onCheckedChange={toggleTheme} defaultChecked={isDarkMode} />
           </div>
         </div>
-      </div>
-
-      <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
-        <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-          Version 1.0.0
-        </p>
       </div>
     </div>
   );

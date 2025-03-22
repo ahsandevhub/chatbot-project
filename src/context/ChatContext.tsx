@@ -1,44 +1,45 @@
-// src/context/ChatContext.tsx
+import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
 
-type Conversation = {
+type Chat = {
   id: string;
-  userId: string;
+  user_id: string;
   title: string;
-  date: string;
+  created_at: string;
 };
 
 type Message = {
   id: string;
-  conversationId: string;
+  chat_id: string;
+  sender: "user" | "assistant" | "ai";
   content: string;
-  sender: "user" | "assistant" | "ai"; // Added "ai" here
-  timestamp: string;
+  created_at: string;
 };
 
 interface ChatContextType {
-  conversations: Conversation[];
-  currentConversationId: string | null;
+  chats: Chat[];
+  currentChatId: string | null;
   messages: Record<string, Message[]>;
-  addConversation: (title: string) => Promise<string>;
+  addChat: (title: string) => Promise<string>;
   addMessage: (
-    conversationId: string,
+    chatId: string,
     content: string,
-    sender: "user" | "assistant" | "ai" // Added "ai" here
+    sender: "user" | "ai"
   ) => Promise<void>;
-  deleteConversation: (id: string) => Promise<void>;
-  renameConversation: (id: string, newTitle: string) => Promise<void>;
-  setCurrentConversationId: (id: string | null) => void;
-  fetchMessages: (conversationId: string) => Promise<void>;
+  deleteChat: (id: string) => Promise<void>;
+  renameChat: (id: string, newTitle: string) => Promise<void>;
+  setCurrentChatId: (id: string | null) => void;
+  fetchMessages: (chatId: string) => Promise<void>;
   isGeneratingResponse: Record<string, boolean>;
-  stopResponseGeneration: (conversationId: string) => void;
+  stopResponseGeneration: (chatId: string) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -46,132 +47,177 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export const ChatProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversationId, setCurrentConversationId] = useState<
-    string | null
-  >(null);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Record<string, Message[]>>({});
   const [isGeneratingResponse, setIsGeneratingResponse] = useState<
     Record<string, boolean>
   >({});
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchConversations = async () => {
-      const { data, error } = await supabase.from("conversations").select("*");
-      if (!error && data) setConversations(data);
+    const fetchChats = async () => {
+      if (!user) {
+        console.log("User not logged in, chats not fetched.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("chats")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setChats(data);
+      } else {
+        console.error("Error fetching chats:", error);
+      }
     };
 
-    fetchConversations();
-  }, []);
+    fetchChats();
+  }, [user]);
 
-  const addConversation = async (title: string): Promise<string> => {
+  const addChat = async (title: string): Promise<string> => {
+    if (!user) throw new Error("User not authenticated.");
+
     const { data, error } = await supabase
-      .from("conversations")
+      .from("chats")
       .insert([
-        { title, date: new Date().toISOString(), userId: "your-user-id" },
+        {
+          title,
+          created_at: new Date().toISOString(),
+          user_id: user.id,
+        },
       ])
       .select("id");
 
     if (error) throw error;
-    const newConversation = {
+    const newChat = {
       id: data[0].id,
       title,
-      date: new Date().toISOString(),
-      userId: "your-user-id",
+      created_at: new Date().toISOString(),
+      user_id: user.id,
     };
-    setConversations((prev) => [newConversation, ...prev]);
-    return newConversation.id;
+    setChats((prev) => [newChat, ...prev]);
+    return newChat.id;
   };
 
   const addMessage = async (
-    conversationId: string,
+    chatId: string,
     content: string,
-    sender: "user" | "assistant" | "ai" // Added "ai" here
+    sender: "user" | "assistant" | "ai"
   ) => {
     setIsGeneratingResponse((prev) => ({
       ...prev,
-      [conversationId]: sender === "user",
+      [chatId]: sender === "user",
     }));
 
     const newMessage = {
       id: `msg-${Date.now()}`,
-      conversationId,
+      chat_id: chatId,
       content,
       sender,
-      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
 
     const { error } = await supabase.from("messages").insert([newMessage]);
     if (error) {
       setIsGeneratingResponse((prev) => ({
         ...prev,
-        [conversationId]: false,
+        [chatId]: false,
       }));
       throw error;
     }
 
     setMessages((prev) => ({
       ...prev,
-      [conversationId]: [...(prev[conversationId] || []), newMessage],
+      [chatId]: [...(prev[chatId] || []), newMessage],
     }));
 
     setIsGeneratingResponse((prev) => ({
       ...prev,
-      [conversationId]: false,
+      [chatId]: false,
     }));
+    console.log("New message added:", newMessage);
   };
 
-  const deleteConversation = async (id: string) => {
-    await supabase.from("messages").delete().eq("conversationId", id);
-    await supabase.from("conversations").delete().eq("id", id);
-    setConversations((prev) => prev.filter((conv) => conv.id !== id));
-    if (currentConversationId === id) {
-      setCurrentConversationId(null);
+  const deleteChat = async (id: string) => {
+    await supabase.from("messages").delete().eq("chat_id", id);
+    await supabase.from("chats").delete().eq("id", id);
+    setChats((prev) => prev.filter((chat) => chat.id !== id));
+    if (currentChatId === id) {
+      setCurrentChatId(null);
+    }
+    console.log("Chat deleted, id:", id);
+  };
+
+  const renameChat = async (id: string, newTitle: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("chats")
+        .update({ title: newTitle })
+        .eq("id", id)
+        .select();
+
+      if (error) {
+        console.error("Error renaming chat:", error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setChats((prev) =>
+          prev.map((chat) =>
+            chat.id === id ? { ...chat, title: newTitle } : chat
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Unexpected error renaming chat:", error);
     }
   };
 
-  const renameConversation = async (id: string, newTitle: string) => {
-    await supabase
-      .from("conversations")
-      .update({ title: newTitle })
-      .eq("id", id);
-    setConversations((prev) =>
-      prev.map((conv) => (conv.id === id ? { ...conv, title: newTitle } : conv))
-    );
-  };
+  const fetchMessages = useCallback(async (conversationId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("chat_id", conversationId)
+        .order("created_at", { ascending: true });
 
-  const fetchMessages = async (conversationId: string) => {
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("conversationId", conversationId)
-      .order("timestamp", { ascending: true });
+      if (error) {
+        console.error("Error fetching messages:", error);
+        return;
+      }
 
-    if (!error && data) {
-      setMessages((prev) => ({ ...prev, [conversationId]: data }));
-    } else if (error) {
-      console.error("Error fetching messages:", error);
+      setMessages((prevMessages) => ({
+        ...prevMessages,
+        [conversationId]: data,
+      }));
+    } catch (err) {
+      console.error("Error in fetching messages:", err);
     }
-  };
+  }, []);
 
-  const stopResponseGeneration = (conversationId: string) => {
+  const stopResponseGeneration = (chatId: string) => {
     setIsGeneratingResponse((prev) => ({
       ...prev,
-      [conversationId]: false,
+      [chatId]: false,
     }));
+    console.log("Response generation stopped for chat:", chatId);
   };
 
   return (
     <ChatContext.Provider
       value={{
-        conversations,
-        currentConversationId,
+        chats,
+        currentChatId,
         messages,
-        addConversation,
+        addChat,
         addMessage,
-        deleteConversation,
-        renameConversation,
-        setCurrentConversationId,
+        deleteChat,
+        renameChat,
+        setCurrentChatId,
         fetchMessages,
         isGeneratingResponse,
         stopResponseGeneration,

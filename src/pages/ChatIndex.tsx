@@ -1,4 +1,4 @@
-// src/pages/ChatIndex.tsx
+import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,11 +9,12 @@ import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/use-mobile";
 
 const ChatIndex: React.FC = () => {
-  const { addConversation, addMessage } = useChat();
+  const { addChat, addMessage } = useChat(); // Fixed method names
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
-  const temporaryConversationId = "temp-home-page";
+  const temporaryConversationId = "temp-home-page"; // Temporary ID for now
+  const { user } = useAuth();
 
   useEffect(() => {
     if (isMobile) {
@@ -26,42 +27,46 @@ const ChatIndex: React.FC = () => {
   const handleSendMessage = async (content: string) => {
     try {
       const title = content.split(" ").slice(0, 4).join(" ") + "...";
-      const newId = await addConversation(title);
+      const newId = await addChat(title);
 
       addMessage(newId, content, "user");
 
-      await supabase
-        .from("conversations")
-        .insert([{ id: newId, title, date: new Date().toISOString() }]);
+      // Corrected database insertion to use the 'chats' table
+      await supabase.from("chats").insert([
+        {
+          id: newId,
+          title,
+          created_at: new Date().toISOString(), // Use 'created_at' to match your schema
+          user_id: user.id, // added user_id
+        },
+      ]);
 
       await supabase.from("messages").insert([
         {
           id: `msg-${Date.now()}`,
-          conversationId: newId,
+          chat_id: newId, // use chat_id instead conversationId
           content,
           sender: "user",
-          timestamp: new Date().toISOString(),
+          created_at: new Date().toISOString(), // Use 'created_at' to match your schema
         },
       ]);
 
-      // Simulate a dummy response from the AI
       const dummyResponse = `Dummy response: ${content}`;
       setTimeout(async () => {
         addMessage(newId, dummyResponse, "ai");
         await supabase.from("messages").insert([
           {
             id: `msg-${Date.now() + 1}`,
-            conversationId: newId,
+            chat_id: newId, // use chat_id instead conversationId
             content: dummyResponse,
             sender: "ai",
-            timestamp: new Date().toISOString(),
+            created_at: new Date().toISOString(), // Use 'created_at' to match your schema
           },
         ]);
         navigate(`/chat/${newId}`);
-      }, 1000); // Simulate a 1-second delay for the AI response
+      }, 1000);
     } catch (error) {
       console.error("Error sending message:", error);
-      // Optionally, show an error message to the user
     }
   };
 

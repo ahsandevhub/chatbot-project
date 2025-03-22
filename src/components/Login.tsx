@@ -15,9 +15,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
-  const { session } = useAuth();
-
-  console.log("Current session:", session);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
