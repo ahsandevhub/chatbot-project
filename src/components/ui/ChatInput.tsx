@@ -89,9 +89,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
     document.addEventListener("focusin", checkForActiveEditing);
 
     const focusInput = () => {
-      // Only focus if we're not editing elsewhere and not generating a response
-      if (!isGenerating && !isEditingElsewhere && inputRef.current) {
-        inputRef.current.focus();
+      if (!isGenerating && document.activeElement !== inputRef.current) {
+        inputRef.current?.focus();
       }
     };
 
@@ -138,26 +137,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
             <button
               type="button"
               onClick={handleStopGeneration}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-opacity duration-200 text-red-500 hover:text-red-700"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500 hover:text-red-700"
               title="Stop generating"
             >
-              <Square size={16} className="fill-current" />
+              <Square size={16} />
             </button>
           ) : (
             <button
               type="submit"
-              className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-opacity duration-200 ${
+              disabled={!message.trim() || isGenerating}
+              className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
                 message.trim() && !isGenerating
                   ? "opacity-100"
                   : "opacity-50 cursor-not-allowed"
               }`}
-              disabled={!message.trim() || isGenerating}
             >
               <SendIcon
                 size={16}
-                className={`${
-                  isGenerating ? "text-gray-400" : "text-gray-700"
-                }`}
+                className={isGenerating ? "text-gray-400" : "text-gray-700"}
               />
             </button>
           )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import ChatContainer from "../components/layout/ChatContainer";
 import Header from "../components/layout/Header";
@@ -9,43 +9,44 @@ import { useIsMobile } from "../hooks/use-mobile";
 const Chat: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { chats, setCurrentChatId, fetchMessages } = useChat();
+  const { chats, setCurrentChatId, fetchMessages, loading } = useChat();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
-  const [hasFetchedMessages, setHasFetchedMessages] = useState(false); // Track message fetching
+
+  const hasRedirected = useRef(false); // Track redirection state
 
   useEffect(() => {
+    if (loading) return; // Prevent execution during loading
+    if (!chats.length) {
+      // If there are no chats, ensure redirection
+      if (!hasRedirected.current) {
+        hasRedirected.current = true;
+        navigate("/chat");
+      }
+      return;
+    }
+
     if (id) {
       const chatExists = chats.some((c) => c.id === id);
-      if (!chatExists) {
-        navigate("/");
+      if (!chatExists && !hasRedirected.current) {
+        console.warn(`Chat with ID ${id} not found. Redirecting...`);
+        hasRedirected.current = true; // Prevent multiple redirects
+        setCurrentChatId(null); // Clear the current chat ID
+        navigate("/chat");
         return;
       }
 
       setCurrentChatId(id);
-
-      // Fetch messages only if they haven't been fetched yet for this id
-      if (!hasFetchedMessages) {
-        fetchMessages(id);
-        setHasFetchedMessages(true);
-      }
+      fetchMessages(id);
     }
 
-    // Auto-close sidebar on mobile
     if (isMobile) {
       setIsSidebarOpen(false);
     }
-  }, [
-    id,
-    navigate,
-    setCurrentChatId,
-    fetchMessages,
-    isMobile,
-    hasFetchedMessages,
-  ]);
+  }, [id, chats, navigate, setCurrentChatId, fetchMessages, isMobile, loading]);
 
   if (!id) {
-    return <Navigate to="/" />;
+    return <Navigate to="/chat" />;
   }
 
   const toggleSidebar = () => {

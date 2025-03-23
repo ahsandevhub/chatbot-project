@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     addChat,
     deleteChat,
     renameChat,
-  } = useChat(); // Destructuring from useChat based on the provided context
+  } = useChat();
   const [hoveredChat, setHoveredChat] = useState<string | null>(null);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");

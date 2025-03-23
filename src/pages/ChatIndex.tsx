@@ -1,5 +1,3 @@
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/lib/supabaseClient";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/layout/Header";
@@ -9,64 +7,34 @@ import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/use-mobile";
 
 const ChatIndex: React.FC = () => {
-  const { addChat, addMessage } = useChat(); // Fixed method names
+  const { addChat, addMessage } = useChat();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
-  const temporaryConversationId = "temp-home-page"; // Temporary ID for now
-  const { user } = useAuth();
+  const [loadingResponse, setLoadingResponse] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isMobile) {
-      setIsSidebarOpen(false);
-    } else {
-      setIsSidebarOpen(true);
-    }
+    setIsSidebarOpen(!isMobile);
   }, [isMobile]);
 
   const handleSendMessage = async (content: string) => {
     try {
+      setLoadingResponse(true);
       const title = content.split(" ").slice(0, 4).join(" ") + "...";
       const newId = await addChat(title);
+      setConversationId(newId); // Set conversation ID
 
-      addMessage(newId, content, "user");
+      // Redirect immediately to the chat page
+      navigate(`/chat/${newId}`);
 
-      // Corrected database insertion to use the 'chats' table
-      await supabase.from("chats").insert([
-        {
-          id: newId,
-          title,
-          created_at: new Date().toISOString(), // Use 'created_at' to match your schema
-          user_id: user.id, // added user_id
-        },
-      ]);
+      // Continue processing messages
+      await addMessage(newId, content, "user");
 
-      await supabase.from("messages").insert([
-        {
-          id: `msg-${Date.now()}`,
-          chat_id: newId, // use chat_id instead conversationId
-          content,
-          sender: "user",
-          created_at: new Date().toISOString(), // Use 'created_at' to match your schema
-        },
-      ]);
-
-      const dummyResponse = `Dummy response: ${content}`;
-      setTimeout(async () => {
-        addMessage(newId, dummyResponse, "ai");
-        await supabase.from("messages").insert([
-          {
-            id: `msg-${Date.now() + 1}`,
-            chat_id: newId, // use chat_id instead conversationId
-            content: dummyResponse,
-            sender: "ai",
-            created_at: new Date().toISOString(), // Use 'created_at' to match your schema
-          },
-        ]);
-        navigate(`/chat/${newId}`);
-      }, 1000);
+      setLoadingResponse(false);
     } catch (error) {
       console.error("Error sending message:", error);
+      setLoadingResponse(false);
     }
   };
 
@@ -79,9 +47,7 @@ const ChatIndex: React.FC = () => {
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div
         className="flex flex-col flex-1 w-full transition-all duration-300"
-        style={{
-          marginLeft: !isMobile && isSidebarOpen ? "260px" : "0",
-        }}
+        style={{ marginLeft: !isMobile && isSidebarOpen ? "260px" : "0" }}
       >
         <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
         <div className="flex-1 flex flex-col items-center justify-center p-6">
@@ -89,10 +55,11 @@ const ChatIndex: React.FC = () => {
             Which market prices can I pull up for you?
           </h1>
           <div className="w-full max-w-3xl">
+            {/* Pass conversationId to ChatInput */}
             <ChatInput
               onSubmit={handleSendMessage}
               placeholder="Ask anything"
-              conversationId={temporaryConversationId}
+              conversationId={conversationId}
             />
           </div>
         </div>

@@ -28,8 +28,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversationMessages]);
 
-  console.log("Conversation messages:", conversationMessages);
-
   return (
     <div className="flex flex-col h-full w-full bg-chat-background">
       {conversationMessages.length === 0 ? (
@@ -54,7 +52,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
                 <div
                   key={message.id}
                   className={`${
-                    message.sender === "assistant" &&
+                    message.sender === "ai" &&
                     index === conversationMessages.length - 1 &&
                     isGenerating
                       ? "animate-fade-in"
