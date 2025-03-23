@@ -197,9 +197,11 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
                                 <em className="italic">{children}</em>
                               ),
                               table: ({ children }) => (
-                                <table className="table-auto text-sm border-collapse border border-gray-200 mb-2">
-                                  {children}
-                                </table>
+                                <div className="overflow-auto max-w-full">
+                                  <table className="table-auto text-sm border-collapse border border-gray-200 mb-2">
+                                    {children}
+                                  </table>
+                                </div>
                               ),
                               thead: ({ children }) => (
                                 <thead className="bg-gray-200 dark:bg-gray-700">
@@ -215,12 +217,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
                                 </tr>
                               ),
                               th: ({ children }) => (
-                                <th className="px-4 py-2 text-left bg-gray-100 dark:bg-gray-700">
+                                <th className="sm:px-4 px-3 py-2 text-left bg-gray-100 dark:bg-gray-700">
                                   {children}
                                 </th>
                               ),
                               td: ({ children }) => (
-                                <td className="px-4 py-2">{children}</td>
+                                <td className="sm:px-4 px-3 py-2">
+                                  {children}
+                                </td>
                               ),
                             }}
                           >
