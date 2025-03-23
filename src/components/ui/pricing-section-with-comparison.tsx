@@ -99,7 +99,7 @@ export function Pricing({
                 price: 0,
                 description:
                   "Ideal for anyone looking to dip their toes in the water and explore the capabilities of our AI Assistant.",
-                action: { label: "Sign Up", href: "#" },
+                action: { label: "Sign Up", href: "/signup" },
               },
               {
                 name: "Equity Analyst",
@@ -107,14 +107,14 @@ export function Pricing({
                 highlight: true,
                 description:
                   "The go-to plan for traders who need historical intraday stock data from the world's largest stock exchanges.",
-                action: { label: "Sign Up", href: "#" },
+                action: { label: "Sign Up", href: "/signup" },
               },
               {
                 name: "Global Macro",
                 price: 13.99,
                 description:
                   "Our full-fledged plan for traders who need access to the entire enchilada.",
-                action: { label: "Sign Up", href: "#" },
+                action: { label: "Sign Up", href: "/signup" },
               },
             ].map((tier, index) => (
               <PricingTier
