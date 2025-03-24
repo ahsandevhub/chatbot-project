@@ -226,6 +226,15 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
                                   {children}
                                 </td>
                               ),
+                              a: ({ children, href, ...props }) => (
+                                <a
+                                  href={href}
+                                  className="text-blue-600 hover:underline"
+                                  {...props}
+                                >
+                                  {children}
+                                </a>
+                              ),
                             }}
                           >
                             {message.content}
