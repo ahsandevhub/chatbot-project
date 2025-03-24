@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { loadStripe } from "@stripe/stripe-js";
-import React from "react";
+import React, { useState } from "react";
 
 interface PricingPlanProps {
   name: string;
@@ -13,7 +13,7 @@ interface PricingPlanProps {
   isPopular?: boolean;
   buttonText: string;
   buttonDisabled: boolean;
-  priceId: string; // Add priceId prop
+  priceId: string;
 }
 
 const PricingPlan: React.FC<PricingPlanProps> = ({
@@ -24,38 +24,41 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
   isPopular = false,
   buttonText,
   buttonDisabled,
-  priceId, // Destructure priceId
+  priceId,
 }) => {
   const { user } = useAuth();
   const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCheckout = async () => {
-    if (!user) {
-      console.error("User not authenticated.");
-      return;
-    }
-    if (buttonDisabled) return;
+    if (!user || buttonDisabled || isLoading) return;
+    setIsLoading(true);
 
-    const stripe = await stripePromise;
+    try {
+      const stripe = await stripePromise;
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ priceId: priceId, userId: user.id }),
+        }
+      );
 
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ priceId: priceId, userId: user.id }),
+      const session = await response.json();
+      const result = await stripe!.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (result.error) {
+        console.error(result.error.message);
       }
-    );
-
-    const session = await response.json();
-    const result = await stripe!.redirectToCheckout({
-      sessionId: session.id,
-    });
-
-    if (result.error) {
-      console.error(result.error.message);
+    } catch (error) {
+      console.error("Checkout error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,13 +92,15 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
       </CardHeader>
       <div className="px-4 flex flex-col">
         <Button
-          className={`w-full rounded-full ${
-            buttonDisabled ? "bg-gray-300 text-gray-600 cursor-not-allowed" : ""
+          className={`w-full rounded-full flex justify-center items-center ${
+            buttonDisabled || isLoading
+              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              : ""
           }`}
-          disabled={buttonDisabled}
-          onClick={handleCheckout} // Add onClick handler
+          disabled={buttonDisabled || isLoading}
+          onClick={handleCheckout}
         >
-          {buttonText}
+          {isLoading ? "Processing..." : buttonText}
         </Button>
       </div>
       <CardContent className="space-y-2 p-4">
