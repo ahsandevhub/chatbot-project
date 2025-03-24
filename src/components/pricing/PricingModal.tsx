@@ -50,6 +50,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
       isPopular: false,
       buttonText: currentPlan === "intern" ? "Your current plan" : "Get Intern",
       buttonDisabled: currentPlan === "intern",
+      priceId: "", // Free plan, no Stripe Price ID
     },
     {
       name: "Equity Analyst",
@@ -69,6 +70,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
           ? "Your current plan"
           : "Get Equity Analyst",
       buttonDisabled: currentPlan === "equity_analyst",
+      priceId: "price_1R5vFhC15A7InoP9bTVXGLxS", // Replace with your actual Price ID
     },
     {
       name: "Global Macro",
@@ -86,6 +88,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
           ? "Your current plan"
           : "Get Global Macro",
       buttonDisabled: currentPlan === "global_macro",
+      priceId: "price_1R6F3XC15A7InoP9X4zV8Ys1", // Replace with your actual Price ID
     },
   ];
 
@@ -114,6 +117,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
                   isPopular={plan.isPopular}
                   buttonText={plan.buttonText}
                   buttonDisabled={plan.buttonDisabled}
+                  priceId={plan.priceId} // Add priceId prop
                 />
               ))}
             </div>

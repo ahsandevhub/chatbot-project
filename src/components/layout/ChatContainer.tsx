@@ -66,7 +66,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
     <div className="flex flex-col h-full w-full bg-chat-background">
       {conversationMessages.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center">
-          <h1 className="text-3xl font-semibold mb-6">What can I help with?</h1>
+          <h1 className="text-3xl font-semibold mb-6">
+            Which market prices can I pull up for you?
+          </h1>
           <div className="w-full max-w-3xl">
             <ChatInput
               onSubmit={handleSendMessage}

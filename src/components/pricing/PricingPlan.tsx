@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
+import { loadStripe } from "@stripe/stripe-js";
 import React from "react";
 
 interface PricingPlanProps {
@@ -11,6 +13,7 @@ interface PricingPlanProps {
   isPopular?: boolean;
   buttonText: string;
   buttonDisabled: boolean;
+  priceId: string; // Add priceId prop
 }
 
 const PricingPlan: React.FC<PricingPlanProps> = ({
@@ -21,7 +24,41 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
   isPopular = false,
   buttonText,
   buttonDisabled,
+  priceId, // Destructure priceId
 }) => {
+  const { user } = useAuth();
+  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+  const handleCheckout = async () => {
+    if (!user) {
+      console.error("User not authenticated.");
+      return;
+    }
+    if (buttonDisabled) return;
+
+    const stripe = await stripePromise;
+
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URI}"/create-checkout-session"`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ priceId: priceId, userId: user.id }),
+      }
+    );
+
+    const session = await response.json();
+    const result = await stripe!.redirectToCheckout({
+      sessionId: session.id,
+    });
+
+    if (result.error) {
+      console.error(result.error.message);
+    }
+  };
+
   return (
     <Card
       className={`w-full md:px-4 border transition-transform duration-300 pb-10 ${
@@ -56,6 +93,7 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
             buttonDisabled ? "bg-gray-300 text-gray-600 cursor-not-allowed" : ""
           }`}
           disabled={buttonDisabled}
+          onClick={handleCheckout} // Add onClick handler
         >
           {buttonText}
         </Button>
