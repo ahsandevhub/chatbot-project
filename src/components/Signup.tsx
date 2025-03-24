@@ -41,12 +41,14 @@ const Signup = () => {
     }
 
     try {
-      await signUp(email.trim(), password, firstName, lastName);
+      await signUp(email.trim(), password, firstName);
       console.log("Signup successful!");
-      toast.success(
-        "Account registered successfully! We've sent you an email please confirm before login. It may take 1-5 minutes.",
-        { position: "top-center" }
-      );
+      toast.success("Account registered successfully!", {
+        position: "top-center",
+        description:
+          "We've sent you an email please confirm it before login. It may take 1-3 minutes to arrive.",
+        duration: 10000,
+      });
       localStorage.setItem("runEdgeFunction", "true"); //set local storage variable.
       navigate("/login");
     } catch (error: unknown) {
@@ -99,23 +101,23 @@ const Signup = () => {
             <p className="text-red-500 text-sm text-center mt-2">{errorMsg}</p>
           )}
           <form onSubmit={handleSubmit} className="mt-4">
-            <div className="mb-4 grid grid-cols-2 gap-2">
+            <div className="mb-4">
               <input
                 type="text"
-                placeholder="First Name"
+                placeholder="Your Name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
                 required
               />
-              <input
+              {/* <input
                 type="text"
                 placeholder="Last Name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
                 required
-              />
+              /> */}
             </div>
             <input
               type="email"

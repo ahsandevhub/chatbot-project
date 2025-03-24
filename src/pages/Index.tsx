@@ -28,8 +28,8 @@ const Index: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col font-inter">
-      <Header />
       <main className="overflow-auto">
+        <Header />
         <HeroSectionDemo />
         <div id="pricing">
           <Pricing />
