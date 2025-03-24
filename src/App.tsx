@@ -8,7 +8,6 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import AuthRedirectHandler from "./components/AuthRedirectHandler";
 import Login from "./components/Login";
 import PrivacyPolicy from "./components/PrivacyPolicy";
-import Profile from "./components/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import ResetPassword from "./components/ResetPassword";
@@ -17,11 +16,13 @@ import TermsAndServices from "./components/TermsAndServices";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import CancelPage from "./pages/CancelPage";
 import Chat from "./pages/Chat";
 import ChatIndex from "./pages/ChatIndex";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import SuccessPage from "./pages/SuccessPage";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,8 @@ const ThemeSetter = () => {
       "/profile",
       "/privacy-policy",
       "/terms-services",
+      "/success",
+      "/cancel",
     ];
 
     if (alwaysLightRoutes.includes(location.pathname)) {
@@ -84,7 +87,8 @@ const App = () => (
               </Route>
 
               <Route path="/" element={<Index />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/success" element={<SuccessPage />} />
+              <Route path="/cancel" element={<CancelPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-services" element={<TermsAndServices />} />
               <Route path="/auth/callback" element={<AuthRedirectHandler />} />

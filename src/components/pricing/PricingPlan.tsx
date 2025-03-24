@@ -39,7 +39,7 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
     const stripe = await stripePromise;
 
     const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_URI}"/create-checkout-session"`,
+      `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
       {
         method: "POST",
         headers: {
