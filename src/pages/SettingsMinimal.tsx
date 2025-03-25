@@ -91,7 +91,7 @@ const Settings: React.FC<SettingsProps> = () => {
       });
 
       // Redirect to /chats after successful deletion
-      navigate("/chats");
+      navigate("/chat");
     } catch (error) {
       console.error("Error deleting chats:", error);
       toast.error("Failed to delete chats. Please try again.", {
