@@ -294,8 +294,8 @@ const Settings: React.FC<SettingsProps> = () => {
               <div className="flex flex-col sm:flex-row gap-2 w-full">
                 {tier.toLowerCase() === "equity_analyst" && (
                   <Button
-                    className="flex-1 px-6 text-sm py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 
-                     disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-700 dark:hover:bg-blue-800"
+                    className="flex-1 px-6 text-sm py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 
+                     disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-800"
                     onClick={handleUpgradePlan}
                     disabled={isLoading}
                   >
