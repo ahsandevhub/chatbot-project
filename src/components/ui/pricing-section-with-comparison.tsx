@@ -1,7 +1,6 @@
-"use client";
-
 import { Check, Minus } from "lucide-react";
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -61,12 +60,15 @@ interface PricingTierProps {
     label: string;
     href: string;
   };
+  navigate: (path: string) => void;
 }
 
 export function Pricing({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) {
+  const navigate = useNavigate();
+
   return (
     <section
       id="pricing"
@@ -107,14 +109,24 @@ export function Pricing({
                 highlight: true,
                 description:
                   "The go-to plan for traders who need historical intraday stock data from the world's largest stock exchanges.",
-                action: { label: "Sign Up", href: "/signup" },
+                action: {
+                  label: "Sign Up",
+                  href: `/custom-signup?priceId=${
+                    import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID
+                  }`,
+                },
               },
               {
                 name: "Global Macro",
                 price: 13.99,
                 description:
                   "Our full-fledged plan for traders who need access to the entire enchilada.",
-                action: { label: "Sign Up", href: "/signup" },
+                action: {
+                  label: "Sign Up",
+                  href: `/custom-signup?priceId=${
+                    import.meta.env.VITE_GLOBAL_MACRO_PRICE_ID
+                  }`,
+                },
               },
             ].map((tier, index) => (
               <PricingTier
@@ -125,6 +137,7 @@ export function Pricing({
                 highlight={tier.highlight}
                 action={tier.action}
                 isOdd={index % 2 !== 0}
+                navigate={navigate}
               />
             ))}
           </div>
@@ -192,6 +205,7 @@ function PricingTier({
   highlight,
   action,
   isOdd,
+  navigate, // Add this to destructured props
 }: PricingTierProps & { isOdd?: boolean }) {
   return (
     <div
@@ -216,8 +230,9 @@ function PricingTier({
       <Button
         className="w-full sm:mb-6"
         variant={highlight ? "default" : "outline"}
+        onClick={() => navigate(action.href)}
       >
-        <a href={action.href}>{action.label}</a>
+        {action.label}
       </Button>
     </div>
   );

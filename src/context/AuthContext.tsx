@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Session, User } from "@supabase/supabase-js";
+import { AuthError, Session, User } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -8,8 +7,17 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName: string) => Promise<void>;
+  customSignUp: (
+    email: string,
+    password: string,
+    firstName: string
+  ) => Promise<{ user: User | null; session: Session | null }>;
+  customGoogleSignIn: () => Promise<{
+    data: { provider: string; url: string } | null;
+    error: AuthError | null;
+  }>;
   signOut: () => Promise<void>;
-  googleSignIn: () => Promise<{ error: any }>;
+  googleSignIn: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<void>;
   session: Session | null;
 }
@@ -77,10 +85,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (error) throw error;
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
+  const customSignUp = async (
+    email: string,
+    password: string,
+    firstName: string
+  ) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          firstName: firstName,
+        },
+      },
+    });
+    if (error) throw error;
+    return {
+      user: data.user ?? null,
+      session: data.session ?? null,
+    };
   };
 
   const googleSignIn = async () => {
@@ -89,6 +112,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     return { error };
+  };
+
+  const customGoogleSignIn = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    return { data, error };
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
   };
 
   const resetPassword = async (email: string) => {
@@ -104,6 +141,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading,
         signIn,
         signUp,
+        customSignUp,
+        customGoogleSignIn,
         signOut,
         googleSignIn,
         resetPassword,

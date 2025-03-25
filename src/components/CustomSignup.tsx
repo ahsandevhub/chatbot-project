@@ -1,28 +1,64 @@
+import { supabase } from "@/lib/supabaseClient";
+import { loadStripe } from "@stripe/stripe-js";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeftIcon, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const Signup = () => {
+const CustomSignup = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { signUp, googleSignIn } = useAuth();
+  const { customSignUp, customGoogleSignIn } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [searchParams] = useSearchParams();
+  const priceId =
+    searchParams.get("priceId") || import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID;
 
   const validateEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
 
+  const handleStripeCheckout = async (userId: string) => {
+    const stripe = await stripePromise;
+
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId,
+          userId: userId,
+        }),
+      }
+    );
+
+    const session = await response.json();
+    const result = await stripe!.redirectToCheckout({
+      sessionId: session.id,
+    });
+
+    if (result.error) {
+      console.error(result.error.message);
+      toast.error("Failed to redirect to payment page");
+    }
+  };
+
+  // For email sign-up
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -41,16 +77,19 @@ const Signup = () => {
     }
 
     try {
-      await signUp(email.trim(), password, firstName);
+      const { user } = await customSignUp(email.trim(), password, firstName);
       console.log("Signup successful!");
       toast.success("Account registered successfully!", {
         position: "top-center",
-        description:
-          "We've sent you an email please confirm it before login. It may take 1-3 minutes to arrive.",
-        duration: 10000,
+        description: "Redirecting to payment page...",
+        duration: 3000,
       });
+
       localStorage.setItem("runEdgeFunction", "true");
-      navigate("/login");
+      // Redirect to Stripe checkout
+      if (user?.id) {
+        await handleStripeCheckout(user.id);
+      }
     } catch (error: unknown) {
       let message = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -72,6 +111,43 @@ const Signup = () => {
       }
       setErrorMsg(message);
       toast.error(message, { position: "top-center" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // For Google sign-up
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Initiate Google sign-in
+      const { error } = await customGoogleSignIn();
+
+      if (error) {
+        throw error;
+      }
+
+      // Set up auth state listener
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === "SIGNED_IN" && session?.user?.id) {
+          try {
+            await handleStripeCheckout(session.user.id);
+          } catch (err) {
+            console.error("Stripe redirect error:", err);
+            toast.error("Failed to redirect to payment page");
+          } finally {
+            subscription.unsubscribe();
+          }
+        }
+      });
+    } catch (err) {
+      console.error("Google sign-in error:", err);
+      setError(err instanceof Error ? err.message : "Sign-in failed");
+      toast.error("Google sign-in failed");
     } finally {
       setLoading(false);
     }
@@ -186,34 +262,7 @@ const Signup = () => {
           </div>
           <div className="mt-4 flex flex-col gap-2">
             <button
-              onClick={async () => {
-                setLoading(true);
-                setErrorMsg(null);
-                try {
-                  const { error } = await googleSignIn();
-                  if (error) {
-                    console.error("Signup Error:", error);
-                    if (error.message.toLowerCase().includes("email already")) {
-                      setErrorMsg("Email address is already in use.");
-                      toast.error("Email address is already in use.", {
-                        position: "top-center",
-                      });
-                    } else {
-                      setErrorMsg(error.message);
-                      toast.error(error.message, { position: "top-center" });
-                    }
-                  }
-                } catch (error: unknown) {
-                  let message = "An unexpected error occurred.";
-                  if (error instanceof Error) {
-                    message = error.message;
-                  }
-                  setErrorMsg(message);
-                  toast.error(message, { position: "top-center" });
-                } finally {
-                  setLoading(false);
-                }
-              }}
+              onClick={handleGoogleSignUp}
               className={`flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 px-4 font-medium text-gray-700 bg-white hover:bg-gray-100 transition-all shadow-sm ${
                 loading ? "opacity-50 cursor-not-allowed" : ""
               }`}
@@ -235,4 +284,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default CustomSignup;

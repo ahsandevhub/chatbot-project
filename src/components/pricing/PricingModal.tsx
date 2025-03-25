@@ -69,7 +69,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
           ? "Your current plan"
           : "Get Equity Analyst",
       buttonDisabled: currentPlan === "equity_analyst",
-      priceId: "price_1R5vFhC15A7InoP9bTVXGLxS", // Replace with your actual Price ID
+      priceId: import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID,
     },
     {
       name: "Global Macro",
@@ -87,7 +87,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
           ? "Your current plan"
           : "Get Global Macro",
       buttonDisabled: currentPlan === "global_macro",
-      priceId: "price_1R6F3XC15A7InoP9X4zV8Ys1", // Replace with your actual Price ID
+      priceId: import.meta.env.VITE_GLOBAL_MACRO_PRICE_ID,
     },
   ];
 
