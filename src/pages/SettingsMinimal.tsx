@@ -246,7 +246,7 @@ const Settings: React.FC<SettingsProps> = () => {
               </Button>
             )}
             {subscription && (
-              <div className="flex flex-col space-y-2 mt-4">
+              <div className="flex space-x-2 mt-4">
                 <Button
                   className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleManageSubscription}
