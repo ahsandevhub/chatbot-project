@@ -90,8 +90,9 @@ const Settings: React.FC<SettingsProps> = () => {
         position: "bottom-center",
       });
 
-      // Redirect to /chats after successful deletion
+      // Redirect to /chat and reload after short delay
       navigate("/chat");
+      setTimeout(() => window.location.reload(), 100);
     } catch (error) {
       console.error("Error deleting chats:", error);
       toast.error("Failed to delete chats. Please try again.", {
