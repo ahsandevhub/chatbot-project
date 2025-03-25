@@ -104,7 +104,7 @@ const Signup = () => {
             <div className="mb-4">
               <input
                 type="text"
-                placeholder="Your Name"
+                placeholder="First Name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"

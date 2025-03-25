@@ -57,6 +57,10 @@ const Settings: React.FC<SettingsProps> = () => {
     });
   };
 
+  const addOneDay = (dateString: string) => {
+    return new Date(new Date(dateString).getTime() + 86400000).toISOString();
+  };
+
   const InfoRow = ({
     label,
     value,
@@ -168,23 +172,33 @@ const Settings: React.FC<SettingsProps> = () => {
             <div className="space-y-1">
               <InfoRow
                 label="Subscription Plan"
-                value={subscription?.plan || "Free"}
+                value={subscription?.plan || "Intern"}
               />
               <InfoRow
                 label="Status"
-                value={subscription?.status || "Inactive"}
+                value={subscription?.status || "Active"}
               />
               <InfoRow
                 label="Current Period Starts"
-                value={formatDate(subscription?.current_period_start)}
+                value={
+                  formatDate(subscription?.current_period_start) ||
+                  user.created_at
+                    ? formatDate(user.created_at)
+                    : null
+                }
               />
               <InfoRow
                 label="Current Period Ends"
-                value={formatDate(subscription?.current_period_end)}
+                value={
+                  formatDate(subscription?.current_period_end) ||
+                  (user.created_at
+                    ? formatDate(addOneDay(user.created_at))
+                    : null)
+                }
               />
               <InfoRow
                 label="Credits Limit"
-                value={subscription?.credits_limit}
+                value={subscription?.credits_limit || "2"}
               />
               <InfoRow
                 label="Available Credits"
