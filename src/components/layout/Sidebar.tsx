@@ -6,18 +6,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useAuth } from "@/context/AuthContext"; // Import the AuthContext
+import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/lib/supabaseClient"; // Import your Supabase client
+import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
+import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import {
   Check,
   MessageSquarePlus,
@@ -27,10 +27,16 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useChat } from "../../context/ChatContext";
 import PricingModal from "../pricing/PricingModal";
+
+const sortChatsByDate = (chats: any[]) => {
+  return [...chats].sort((a, b) => {
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+};
 
 const groupConversationsByDate = (chats: any[]) => {
   const today = new Date();
@@ -94,8 +100,54 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const { user } = useAuth();
   const [userPlan, setUserPlan] = useState<string | null>(null);
   const [loadingPlan, setLoadingPlan] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [visibleChats, setVisibleChats] = useState(30);
+  const [allChats, setAllChats] = useState<any[]>([]);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
-  const groupedChats = useMemo(() => groupConversationsByDate(chats), [chats]);
+  // Sort chats by date
+  useEffect(() => {
+    if (chats) {
+      const sorted = sortChatsByDate(chats);
+      setAllChats(sorted);
+    }
+  }, [chats]);
+
+  // Group only the visible chats
+  const groupedChats = useMemo(() => {
+    return groupConversationsByDate(allChats.slice(0, visibleChats));
+  }, [allChats, visibleChats]);
+
+  // Handle scroll events
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = viewport;
+      const isNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
+
+      if (isNearBottom && !loadingMore && visibleChats < allChats.length) {
+        setLoadingMore(true);
+
+        setTimeout(() => {
+          setVisibleChats((prev) => Math.min(prev + 30, allChats.length));
+          setLoadingMore(false);
+        }, 1500);
+      }
+    };
+
+    viewport.addEventListener("scroll", handleScroll);
+    return () => viewport.removeEventListener("scroll", handleScroll);
+  }, [allChats.length, loadingMore, visibleChats]);
+
+  // Reset visible chats when sidebar is opened
+  useEffect(() => {
+    if (isSidebarOpen) {
+      setVisibleChats(30);
+    }
+  }, [isSidebarOpen]);
+
   const hasChats = chats && chats.length > 0;
 
   const handleNewChat = async () => {
@@ -160,13 +212,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           .single();
 
         if (error) {
-          console.error("Error fetching subscription:", error);
           setUserPlan("intern");
         } else {
           setUserPlan(data?.plan || "intern");
         }
       } catch (error) {
-        console.error("Error fetching user plan:", error);
         setUserPlan("intern");
       } finally {
         setLoadingPlan(false);
@@ -219,117 +269,136 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <ScrollArea className="flex-1">
-          <div className="py-2 px-2 space-y-5">
-            {hasChats ? (
-              Object.entries(groupedChats).map(([group, groupChats]) =>
-                groupChats.length > 0 ? (
-                  <div key={group} className="space-y-1">
-                    <h3 className="px-3 text-xs font-medium text-muted-foreground mb-2">
-                      {group}
-                    </h3>
-                    <div className="space-y-1">
-                      {groupChats.map((chat) => (
-                        <div
-                          key={chat.id}
-                          className={cn(
-                            "flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors duration-200 hover:bg-accent",
-                            currentChatId === chat.id ? "bg-accent" : ""
-                          )}
-                          onMouseEnter={() => setHoveredChat(chat.id)}
-                          onMouseLeave={() =>
-                            setHoveredChat(
-                              chat.id === editingChatId ? chat.id : null
-                            )
-                          }
-                          onClick={() => handleChatClick(chat.id)}
-                        >
-                          {editingChatId === chat.id ? (
-                            <div className="flex items-center gap-1 flex-1">
-                              <Input
-                                value={editingName}
-                                onChange={(e) => setEditingName(e.target.value)}
-                                onKeyDown={(e) => handleEditKeyDown(e, chat.id)}
-                                className="h-7 py-1 flex-1"
-                                autoFocus
-                              />
-                              <button
-                                onClick={() => handleSaveEdit(chat.id)}
-                                className="p-1 text-green-600 hover:bg-accent rounded"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="p-1 text-red-600 hover:bg-accent rounded"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <Link
-                                to={`/chat/${chat.id}`}
-                                className="flex-1 truncate"
-                                onClick={() => handleChatClick(chat.id)}
-                              >
-                                <span className="truncate">{chat.title}</span>
-                              </Link>
+        <ScrollAreaPrimitive.Root className="h-full">
+          <ScrollAreaPrimitive.Viewport ref={viewportRef} className="h-full">
+            <div className="py-2 px-2 space-y-5">
+              {hasChats ? (
+                Object.entries(groupedChats).map(([group, groupChats]) =>
+                  groupChats.length > 0 ? (
+                    <div key={group} className="space-y-1">
+                      <h3 className="px-3 text-xs font-medium text-muted-foreground mb-2">
+                        {group}
+                      </h3>
+                      <div className="space-y-1">
+                        {groupChats.map((chat) => (
+                          <div
+                            key={chat.id}
+                            className={cn(
+                              "flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors duration-200 hover:bg-accent",
+                              currentChatId === chat.id ? "bg-accent" : ""
+                            )}
+                            onMouseEnter={() => setHoveredChat(chat.id)}
+                            onMouseLeave={() =>
+                              setHoveredChat(
+                                chat.id === editingChatId ? chat.id : null
+                              )
+                            }
+                            onClick={() => handleChatClick(chat.id)}
+                          >
+                            {editingChatId === chat.id ? (
+                              <div className="flex items-center gap-1 flex-1">
+                                <Input
+                                  value={editingName}
+                                  onChange={(e) =>
+                                    setEditingName(e.target.value)
+                                  }
+                                  onKeyDown={(e) =>
+                                    handleEditKeyDown(e, chat.id)
+                                  }
+                                  className="h-7 py-1 flex-1"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() => handleSaveEdit(chat.id)}
+                                  className="p-1 text-green-600 hover:bg-accent rounded"
+                                >
+                                  <Check size={16} />
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="p-1 text-red-600 hover:bg-accent rounded"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <Link
+                                  to={`/chat/${chat.id}`}
+                                  className="flex-1 truncate"
+                                  onClick={() => handleChatClick(chat.id)}
+                                >
+                                  <span className="truncate">{chat.title}</span>
+                                </Link>
 
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <button
-                                    className={cn(
-                                      "p-1 hover:bg-accent rounded opacity-0 transition-opacity duration-200",
-                                      hoveredChat === chat.id
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <MoreHorizontal size={16} />
-                                  </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem
-                                    onClick={(e) =>
-                                      handleStartEditing(chat.id, chat.title, e)
-                                    }
-                                  >
-                                    <Pencil size={16} className="mr-2" />
-                                    Rename
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => deleteChat(chat.id)}
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 size={16} className="mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </>
-                          )}
-                        </div>
-                      ))}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button
+                                      className={cn(
+                                        "p-1 hover:bg-accent rounded opacity-0 transition-opacity duration-200",
+                                        hoveredChat === chat.id
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <MoreHorizontal size={16} />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuItem
+                                      onClick={(e) =>
+                                        handleStartEditing(
+                                          chat.id,
+                                          chat.title,
+                                          e
+                                        )
+                                      }
+                                    >
+                                      <Pencil size={16} className="mr-2" />
+                                      Rename
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => deleteChat(chat.id)}
+                                      className="text-red-600"
+                                    >
+                                      <Trash2 size={16} className="mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ) : null
-              )
-            ) : (
-              <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
-                No conversations yet. Start a new chat!
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+                  ) : null
+                )
+              ) : (
+                <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
+                  No conversations yet. Start a new chat!
+                </div>
+              )}
+
+              {loadingMore && (
+                <div className="flex justify-center py-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+                </div>
+              )}
+
+              {visibleChats < allChats.length && !loadingMore && (
+                <div className="h-1" />
+              )}
+            </div>
+          </ScrollAreaPrimitive.Viewport>
+          <ScrollAreaPrimitive.Scrollbar orientation="vertical">
+            <ScrollAreaPrimitive.Thumb />
+          </ScrollAreaPrimitive.Scrollbar>
+        </ScrollAreaPrimitive.Root>
       </div>
 
-      {loadingPlan ? (
-        <div className="flex-shrink-0 p-3 border-t border-border flex justify-center items-center">
-          Loading Plan...
-        </div>
-      ) : userPlan === "intern" ? (
+      {!loadingPlan && userPlan === "intern" ? (
         <div className="flex-shrink-0 p-3 border-t border-border">
           <button
             onClick={() => setIsPricingOpen(true)}

@@ -1,4 +1,5 @@
-import { AuthError, Session, User } from "@supabase/supabase-js";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Session, User } from "@supabase/supabase-js";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -8,7 +9,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName: string) => Promise<void>;
   signOut: () => Promise<void>;
-  googleSignIn: () => Promise<{ error: AuthError | null }>;
+  googleSignIn: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<void>;
   session: Session | null;
 }
@@ -74,8 +75,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       },
     });
     if (error) throw error;
-    // setUser(data.user);
-    // setSession(data.session);
   };
 
   const signOut = async () => {

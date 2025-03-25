@@ -204,6 +204,13 @@ const Settings: React.FC<SettingsProps> = () => {
                 label="Available Credits"
                 value={credits?.toString() || "0"}
               />
+              <div className="text-center">
+                <button className="px-4 text-sm mt-3 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700">
+                  {subscription?.plan === "intern"
+                    ? "Upgrade Plan"
+                    : "Manage Subscription"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

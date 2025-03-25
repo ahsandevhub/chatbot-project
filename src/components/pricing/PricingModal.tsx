@@ -29,8 +29,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ open, onOpenChange }) => {
         .eq("user_id", user.id)
         .single();
 
-      if (error) console.error("Error fetching subscription:", error);
-      else setCurrentPlan(data?.plan || "intern");
+      setCurrentPlan(data?.plan || "intern");
     };
 
     fetchCurrentPlan();

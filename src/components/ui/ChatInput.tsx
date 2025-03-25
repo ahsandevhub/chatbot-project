@@ -140,7 +140,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500 hover:text-red-700"
               title="Stop generating"
             >
-              <Square size={16} />
+              <Square fill="red" size={16} />
             </button>
           ) : (
             <button

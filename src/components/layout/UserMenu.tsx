@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
-import Settings from "@/pages/Settings";
+import Settings from "@/pages/SettingsMinimal";
 import { LogOut } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,7 @@ import Modal from "../ui/Modal";
 const UserMenu: React.FC = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false); // State for modal visibility
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleOpenSettings = () => {
     setIsSettingsOpen(true);
