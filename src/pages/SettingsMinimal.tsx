@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 import { loadStripe } from "@stripe/stripe-js";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface SettingsProps {
@@ -24,6 +25,7 @@ const Settings: React.FC<SettingsProps> = () => {
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -87,6 +89,9 @@ const Settings: React.FC<SettingsProps> = () => {
       toast.success("All chats deleted successfully!", {
         position: "bottom-center",
       });
+
+      // Redirect to /chats after successful deletion
+      navigate("/chats");
     } catch (error) {
       console.error("Error deleting chats:", error);
       toast.error("Failed to delete chats. Please try again.", {
@@ -241,7 +246,7 @@ const Settings: React.FC<SettingsProps> = () => {
               </Button>
             )}
             {subscription && (
-              <>
+              <div className="flex flex-col space-y-2 mt-4">
                 <Button
                   className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleManageSubscription}
@@ -250,13 +255,13 @@ const Settings: React.FC<SettingsProps> = () => {
                   {isLoading ? "Loading..." : "Manage Subscription"}
                 </Button>
                 <Button
-                  className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 text-sm py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleCancelSubscription}
                   disabled={isLoading}
                 >
                   {isLoading ? "Loading..." : "Cancel Subscription"}
                 </Button>
-              </>
+              </div>
             )}
           </div>
         </div>
