@@ -105,6 +105,47 @@ const Settings: React.FC<SettingsProps> = () => {
     }
   };
 
+  const handleUpgradePlan = async () => {
+    if (!subscription?.stripe_subscription_id) {
+      toast.error("No active subscription found.", {
+        position: "bottom-center",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const stripe = await stripePromise;
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            priceId: "price_1R6F3XC15A7InoP9X4zV8Ys1",
+            userId: user.id,
+          }),
+        }
+      );
+
+      const session = await response.json();
+      const result = await stripe!.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (result.error) {
+        console.error(result.error.message);
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleManageSubscription = async () => {
     if (!subscription?.stripe_subscription_id) {
       toast.error("No active subscription found.", {
@@ -114,6 +155,7 @@ const Settings: React.FC<SettingsProps> = () => {
     }
 
     setIsLoading(true);
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URI}/api/manage-subscription`,
@@ -196,8 +238,6 @@ const Settings: React.FC<SettingsProps> = () => {
     }
   };
 
-  const showUpgradeButton = tier.toLowerCase() === "intern";
-
   return (
     <div className="overflow-y-auto md:max-h-[80vh] max-w-md">
       <div className="header px-4 border-b">
@@ -249,19 +289,26 @@ const Settings: React.FC<SettingsProps> = () => {
               </Button>
             ) : (
               <div className="flex space-x-2">
+                {tier.toLowerCase() === "equity_analyst" && (
+                  <Button
+                    className="flex-1 px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleUpgradePlan}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Loading..." : "Upgrade Plan"}
+                  </Button>
+                )}
                 <Button
-                  className="flex-1 px-6 text-sm py-2 bg-gray-100 border border-gray-200 dark:border-gray-800 text-gray-800 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+                  className={cn(
+                    "px-6 text-sm py-2 bg-gray-100 border border-gray-200 dark:border-gray-800 text-gray-800 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600",
+                    tier.toLowerCase() === "equity_analyst"
+                      ? "flex-1"
+                      : "w-full"
+                  )}
                   onClick={handleManageSubscription}
                   disabled={isLoading}
                 >
                   {isLoading ? "Loading..." : "Manage Subscription"}
-                </Button>
-                <Button
-                  className="flex-1 px-6 text-sm py-2 bg-red-100 border border-red-200 dark:border-gray-800 text-red-800 rounded-md hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-red-700 dark:text-white dark:hover:bg-red-600"
-                  onClick={handleCancelSubscription}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Loading..." : "Cancel Subscription"}
                 </Button>
               </div>
             )}

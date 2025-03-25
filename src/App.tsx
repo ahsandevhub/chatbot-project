@@ -4,7 +4,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import AuthRedirectHandler from "./components/AuthRedirectHandler";
 import Login from "./components/Login";
 import PrivacyPolicy from "./components/PrivacyPolicy";
@@ -87,6 +93,10 @@ const App = () => (
               </Route>
 
               <Route path="/" element={<Index />} />
+              <Route
+                path="/account"
+                element={<Navigate to="/login" replace />}
+              />
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/cancel" element={<CancelPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
