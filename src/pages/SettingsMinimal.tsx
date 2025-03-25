@@ -278,20 +278,24 @@ const Settings: React.FC<SettingsProps> = () => {
             </p>
             <span>{credits?.toString() || "0"}</span>
           </div>
-          <div className="mt-4 space-y-2 flex justify-center">
+          <div className="mt-4">
             {tier.toLowerCase() === "intern" ? (
-              <Button
-                className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => setIsPricingOpen(true)}
-                disabled={isLoading}
-              >
-                {isLoading ? "Loading..." : "Upgrade Plan"}
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 
+                   disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600"
+                  onClick={() => setIsPricingOpen(true)}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Loading..." : "Upgrade Plan"}
+                </Button>
+              </div>
             ) : (
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
                 {tier.toLowerCase() === "equity_analyst" && (
                   <Button
-                    className="flex-1 px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-6 text-sm py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 
+                     disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-700 dark:hover:bg-blue-800"
                     onClick={handleUpgradePlan}
                     disabled={isLoading}
                   >
@@ -299,8 +303,10 @@ const Settings: React.FC<SettingsProps> = () => {
                   </Button>
                 )}
                 <Button
+                  variant="outline"
                   className={cn(
-                    "px-6 text-sm py-2 bg-gray-100 border border-gray-200 dark:border-gray-800 text-gray-800 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600",
+                    "px-6 text-sm py-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed",
+                    "dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700",
                     tier.toLowerCase() === "equity_analyst"
                       ? "flex-1"
                       : "w-full"
