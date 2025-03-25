@@ -41,7 +41,7 @@ const CancelPage = () => {
             Redirecting in {countdown} seconds...
           </p>
           <button
-            onClick={() => navigate("/pricing")}
+            onClick={() => navigate("/login")}
             className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition"
           >
             Return to Dashboard
