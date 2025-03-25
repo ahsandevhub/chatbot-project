@@ -241,7 +241,7 @@ const Settings: React.FC<SettingsProps> = () => {
           <div className="mt-4 space-y-2 flex justify-center">
             {tier.toLowerCase() === "intern" ? (
               <Button
-                className="px-6 text-sm py-2 bg-gray-100 border dark:bg-gray-700 text-gray-900 dark:text-white rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => setIsPricingOpen(true)}
                 disabled={isLoading}
               >
