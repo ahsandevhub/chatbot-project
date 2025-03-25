@@ -19,7 +19,7 @@ const Settings: React.FC<SettingsProps> = () => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [subscription, setSubscription] = useState<any>(null);
-  const [tier, setTier] = useState<string>("Intern");
+  const [tier, setTier] = useState<string>("intern");
   const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
@@ -38,16 +38,12 @@ const Settings: React.FC<SettingsProps> = () => {
         .single();
 
       if (error) {
+        setTier("intern");
         return;
       }
 
       setSubscription(data);
-
-      if (data) {
-        setTier(data.plan || "Intern");
-      } else {
-        setTier("Intern");
-      }
+      setTier(data?.plan || "intern");
     };
 
     const fetchCredits = async () => {
@@ -66,6 +62,12 @@ const Settings: React.FC<SettingsProps> = () => {
     fetchSubscription();
     fetchCredits();
   }, [user]);
+
+  const formatTierName = (tier: string) => {
+    return tier
+      .replace(/_/g, " ") // Replace underscores with spaces
+      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter of each word
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -228,7 +230,7 @@ const Settings: React.FC<SettingsProps> = () => {
             <p className="text-[15px] mb-2 text-gray-900 dark:text-white">
               Current Plan
             </p>
-            <span>{tier}</span>
+            <span>{formatTierName(tier)}</span>
           </div>
           <div className="flex justify-between items-center">
             <p className="text-[15px] text-gray-900 dark:text-white">
@@ -237,26 +239,25 @@ const Settings: React.FC<SettingsProps> = () => {
             <span>{credits?.toString() || "0"}</span>
           </div>
           <div className="mt-4 space-y-2 flex justify-center">
-            {showUpgradeButton && (
+            {tier.toLowerCase() === "intern" ? (
               <Button
-                className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => setIsPricingOpen(true)}
                 disabled={isLoading}
               >
                 {isLoading ? "Loading..." : "Upgrade Plan"}
               </Button>
-            )}
-            {subscription && (
-              <div className="flex space-x-2 mt-4">
+            ) : (
+              <div className="flex space-x-2">
                 <Button
-                  className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 text-sm py-2 bg-gray-100 border border-gray-200 dark:border-gray-800 text-gray-800 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
                   onClick={handleManageSubscription}
                   disabled={isLoading}
                 >
                   {isLoading ? "Loading..." : "Manage Subscription"}
                 </Button>
                 <Button
-                  className="px-6 text-sm py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 text-sm py-2 bg-red-100 border border-red-200 dark:border-gray-800 text-red-800 rounded-md hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-red-700 dark:text-white dark:hover:bg-red-600"
                   onClick={handleCancelSubscription}
                   disabled={isLoading}
                 >
