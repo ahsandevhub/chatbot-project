@@ -294,7 +294,7 @@ const Settings: React.FC<SettingsProps> = () => {
               <div className="flex flex-col sm:flex-row gap-2 w-full">
                 {tier.toLowerCase() === "equity_analyst" && (
                   <Button
-                    className="flex-1 px-6 text-sm py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 
+                    className="flex-1 px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 
                      disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-800"
                     onClick={handleUpgradePlan}
                     disabled={isLoading}
@@ -303,13 +303,13 @@ const Settings: React.FC<SettingsProps> = () => {
                   </Button>
                 )}
                 <Button
-                  variant="outline"
                   className={cn(
-                    "px-6 text-sm py-2 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed",
-                    "dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700",
+                    "px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    "dark:bg-gray-700 dark:hover:bg-gray-600",
                     tier.toLowerCase() === "equity_analyst"
                       ? "flex-1"
-                      : "w-full"
+                      : "w-max mx-auto"
                   )}
                   onClick={handleManageSubscription}
                   disabled={isLoading}
