@@ -19,7 +19,7 @@ const Settings: React.FC<SettingsProps> = () => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [subscription, setSubscription] = useState<any>(null);
-  const [tier, setTier] = useState<string>("intern");
+  const [tier, setTier] = useState<string>("-");
   const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
@@ -117,52 +117,50 @@ const Settings: React.FC<SettingsProps> = () => {
 
     try {
       // Get the Supabase access token
-      const { data: supabaseSession, error } = await supabase.auth.getSession();
-      if (error || !supabaseSession?.session?.access_token) {
+      const { data: supabaseSession } = await supabase.auth.getSession();
+      const token = supabaseSession?.session?.access_token;
+
+      if (!token) {
         throw new Error("User not authenticated");
       }
 
-      const token = supabaseSession.session.access_token;
-
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URI}/api/upgrade-subscription`, // Updated endpoint
+        `${import.meta.env.VITE_BACKEND_URI}/api/upgrade-subscription`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Include the authorization header
           },
           body: JSON.stringify({
-            subscriptionId: subscription.stripe_subscription_id, // Send subscription ID
+            subscriptionId: subscription.stripe_subscription_id,
           }),
         }
       );
 
       if (!response.ok) {
-        let errorMessage = "Failed to upgrade subscription.";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (jsonError) {
-          console.error("Error parsing response:", jsonError);
-        }
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to upgrade subscription.");
       }
+      const subscriptionData = await response.json();
 
-      const updatedSubscription = await response.json();
-
-      // Handle successful upgrade
-      toast.success("Subscription upgraded successfully!", {
-        position: "bottom-center",
-      });
-
-      // Optionally update local subscription state
-      // setSubscription(updatedSubscription);
-    } catch (error) {
-      console.error("Upgrade error:", error);
-      toast.error(error.message || "An error occurred while upgrading.", {
-        position: "bottom-center",
-      });
+      // Redirect user to the Stripe customer portal. 	The backend should return a URL.
+      if (subscriptionData?.url) {
+        window.open(subscriptionData.url, "_blank");
+      } else {
+        toast.error(
+          "Could not retrieve upgrade management URL.	Please contact support.",
+          { position: "bottom-center" }
+        );
+      }
+    } catch (error: any) {
+      console.error("Error upgrading subscription:", error);
+      toast.error(
+        error.message || "An error occurred while upgrading your subscription.",
+        {
+          position: "bottom-center",
+        }
+      );
     } finally {
       setIsLoading(false);
     }
