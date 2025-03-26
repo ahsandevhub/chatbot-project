@@ -134,8 +134,6 @@ const Settings: React.FC<SettingsProps> = () => {
           },
           body: JSON.stringify({
             subscriptionId: subscription.stripe_subscription_id, // Send subscription ID
-            userId: user.id, // Send user ID
-            priceId: import.meta.env.VITE_GLOBAL_MACRO_PRICE_ID, // Corrected price ID
           }),
         }
       );
@@ -152,10 +150,6 @@ const Settings: React.FC<SettingsProps> = () => {
       }
 
       const updatedSubscription = await response.json();
-
-      console.log("====================================");
-      console.log(updatedSubscription);
-      console.log("====================================");
 
       // Handle successful upgrade
       toast.success("Subscription upgraded successfully!", {
@@ -230,55 +224,6 @@ const Settings: React.FC<SettingsProps> = () => {
           position: "bottom-center",
         }
       );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    if (!subscription?.stripe_subscription_id) {
-      toast.error("No active subscription to cancel.", {
-        position: "bottom-center",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Get the Supabase access token
-      const { data: supabaseSession } = await supabase.auth.getSession();
-      const token = supabaseSession?.session?.access_token;
-
-      if (!token) {
-        throw new Error("User not authenticated");
-      }
-
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URI}/api/cancel-subscription`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the authorization header
-          },
-          body: JSON.stringify({
-            subscriptionId: subscription.stripe_subscription_id,
-            userId: user!.id,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to cancel subscription.");
-      }
-
-      const result = await response.json();
-      toast.success(result.message, { position: "bottom-center" });
-      // Optionally, update the UI to reflect the cancellation
-      setSubscription({ ...subscription, status: "cancel_at_period_end" });
-    } catch (error: any) {
-      console.error("Error canceling subscription:", error);
     } finally {
       setIsLoading(false);
     }
