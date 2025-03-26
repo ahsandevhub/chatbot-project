@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         data: {
           firstName: firstName,
         },
-        emailRedirectTo: `${import.meta.env.VITE_APP_URL}/login"`,
+        emailRedirectTo: `${window.location.origin}/login"`,
       },
     });
     if (error) throw error;
