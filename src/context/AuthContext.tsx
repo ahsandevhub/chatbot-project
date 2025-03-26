@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         data: {
           firstName: firstName,
         },
-        emailRedirectTo: `${window.location.origin}/login"`,
+        emailRedirectTo: `${window.location.origin}/login/`,
       },
     });
     if (error) throw error;
@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/login`, // Where to redirect after email confirmation
+        emailRedirectTo: `${window.location.origin}/login/`, // Where to redirect after email confirmation
         data: {
           firstName: firstName,
         },
