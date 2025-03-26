@@ -1,11 +1,24 @@
 import { CheckCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const SuccessPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [countdown, setCountdown] = useState(5);
+  const searchParams = new URLSearchParams(location.search);
+  const tier = searchParams.get("tier");
+  let tierHeading = "";
+  let tierMessage = "Your subscription is now active.";
+
+  if (tier === "equity") {
+    tierHeading = "Equity Analyst Subscription";
+    tierMessage = "Your Equity Analyst subscription is now active.";
+  } else if (tier === "global") {
+    tierHeading = "Global Macro Subscription";
+    tierMessage = "Your Global Macro subscription is now active.";
+  }
 
   useEffect(() => {
     toast.success("Payment successful!", { position: "top-center" });
@@ -30,11 +43,16 @@ const SuccessPage = () => {
         <div className="flex items-center justify-center mb-4">
           <CheckCircleIcon className="h-12 w-12 text-green-500" />
         </div>
-        <h2 className="text-3xl font-semibold text-center text-gray-900 dark:text-white mb-4">
+        <h2 className="text-3xl font-semibold text-center text-gray-900 dark:text-white mb-3">
           Payment Successful!
         </h2>
+        {tierHeading && (
+          <h3 className="text-lg font-semibold text-center text-gray-700 dark:text-gray-300 mb-4">
+            {tierHeading}
+          </h3>
+        )}
         <p className="text-center text-gray-700 dark:text-gray-300 mb-6">
-          Thank you for your purchase. Your subscription is now active.
+          Thank you for your purchase. <br /> {tierMessage}
         </p>
         <div className="text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-4">

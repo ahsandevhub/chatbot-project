@@ -1,11 +1,21 @@
-import { XCircleIcon } from "lucide-react"; // Import cancel icon
+import { XCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const CancelPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [countdown, setCountdown] = useState(10);
+  const searchParams = new URLSearchParams(location.search);
+  const tier = searchParams.get("tier");
+  let tierHeading = "";
+
+  if (tier === "equity") {
+    tierHeading = "Equity Analyst Subscription Payment Failed";
+  } else if (tier === "global") {
+    tierHeading = "Global Macro Subscription Payment Failed";
+  }
 
   useEffect(() => {
     toast.error("Payment failed!", { position: "top-center" });
@@ -30,9 +40,14 @@ const CancelPage = () => {
         <div className="flex items-center justify-center mb-4">
           <XCircleIcon className="h-12 w-12 text-red-500" />
         </div>
-        <h2 className="text-3xl font-semibold text-center text-gray-900 dark:text-white mb-4">
+        <h2 className="text-3xl font-semibold text-center text-gray-900 dark:text-white mb-3">
           Payment Failed
         </h2>
+        {tierHeading && (
+          <h3 className="text-lg font-semibold text-center text-gray-700 dark:text-gray-300 mb-4">
+            {tierHeading}
+          </h3>
+        )}
         <p className="text-center text-gray-700 dark:text-gray-300 mb-6">
           Your payment was failed. Please try again or contact support.
         </p>
