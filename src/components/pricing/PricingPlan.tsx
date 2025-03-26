@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
 import { loadStripe } from "@stripe/stripe-js";
 import React, { useState } from "react";
 
@@ -37,8 +38,11 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
     try {
       const stripe = await stripePromise;
 
-      // 1. Retrieve the JWT from storage (e.g., localStorage)
-      const token = localStorage.getItem("jwtToken"); // Or wherever you store it
+      // 1. Get the Supabase access token
+      const { data: supabaseSession } = await supabase.auth.getSession();
+      const token = supabaseSession?.session?.access_token; // Retrieve Supabase JWT
+
+      if (!token) throw new Error("User not authenticated");
 
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
@@ -46,21 +50,24 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // 2. Add the JWT to the Authorization header
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Use Supabase JWT
           },
-          body: JSON.stringify({ priceId: priceId, userId: user.id }),
+          body: JSON.stringify({ priceId, userId: user.id }),
         }
       );
 
       if (!response.ok) {
-        // Handle non-2xx responses (e.g., 401, 403)
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const session = await response.json();
+      const sessionData = await response.json(); // Renamed from `session`
+
+      if (!sessionData.id) {
+        throw new Error("Session ID is missing in response");
+      }
+
       const result = await stripe!.redirectToCheckout({
-        sessionId: session.id,
+        sessionId: sessionData.id, // Use renamed variable
       });
 
       if (result.error) {
