@@ -117,12 +117,22 @@ const Settings: React.FC<SettingsProps> = () => {
 
     try {
       const stripe = await stripePromise;
+
+      // Get the Supabase access token
+      const { data: supabaseSession } = await supabase.auth.getSession();
+      const token = supabaseSession?.session?.access_token;
+
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the authorization header
           },
           body: JSON.stringify({
             priceId: "price_1R6F3XC15A7InoP9X4zV8Ys1",
@@ -157,12 +167,21 @@ const Settings: React.FC<SettingsProps> = () => {
     setIsLoading(true);
 
     try {
+      // Get the Supabase access token
+      const { data: supabaseSession } = await supabase.auth.getSession();
+      const token = supabaseSession?.session?.access_token;
+
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URI}/api/manage-subscription`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the authorization header
           },
           body: JSON.stringify({
             subscriptionId: subscription.stripe_subscription_id,
@@ -176,12 +195,12 @@ const Settings: React.FC<SettingsProps> = () => {
       }
       const subscriptionData = await response.json();
 
-      // Redirect user to the Stripe customer portal.  The backend should return a URL.
+      // Redirect user to the Stripe customer portal. 	The backend should return a URL.
       if (subscriptionData?.url) {
         window.open(subscriptionData.url, "_blank");
       } else {
         toast.error(
-          "Could not retrieve subscription management URL.  Please contact support.",
+          "Could not retrieve subscription management URL. 	Please contact support.",
           { position: "bottom-center" }
         );
       }
@@ -208,12 +227,21 @@ const Settings: React.FC<SettingsProps> = () => {
 
     setIsLoading(true);
     try {
+      // Get the Supabase access token
+      const { data: supabaseSession } = await supabase.auth.getSession();
+      const token = supabaseSession?.session?.access_token;
+
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URI}/api/cancel-subscription`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the authorization header
           },
           body: JSON.stringify({
             subscriptionId: subscription.stripe_subscription_id,
@@ -283,7 +311,7 @@ const Settings: React.FC<SettingsProps> = () => {
               <div className="flex justify-center">
                 <Button
                   className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 
-                   disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600"
+				 					disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600"
                   onClick={() => setIsPricingOpen(true)}
                   disabled={isLoading}
                 >
@@ -295,7 +323,7 @@ const Settings: React.FC<SettingsProps> = () => {
                 {tier.toLowerCase() === "equity_analyst" && (
                   <Button
                     className="flex-1 px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 
-                     disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-800"
+						 					disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-800"
                     onClick={handleUpgradePlan}
                     disabled={isLoading}
                   >

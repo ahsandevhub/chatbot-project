@@ -33,28 +33,49 @@ const CustomSignup = () => {
   const handleStripeCheckout = async (userId: string) => {
     const stripe = await stripePromise;
 
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          priceId,
-          userId: userId,
-        }),
+    try {
+      // 1. Get the Supabase access token
+      const { data: supabaseSession } = await supabase.auth.getSession();
+      const token = supabaseSession?.session?.access_token; // Retrieve Supabase JWT
+
+      if (!token) throw new Error("User not authenticated");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Use Supabase JWT
+          },
+          body: JSON.stringify({
+            priceId,
+            userId: userId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    );
 
-    const session = await response.json();
-    const result = await stripe!.redirectToCheckout({
-      sessionId: session.id,
-    });
+      const session = await response.json();
 
-    if (result.error) {
-      console.error(result.error.message);
-      toast.error("Failed to redirect to payment page");
+      if (!session.id) {
+        throw new Error("Session ID is missing in response");
+      }
+
+      const result = await stripe!.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (result.error) {
+        console.error(result.error.message);
+        toast.error("Failed to redirect to payment page");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Checkout failed. Please try again.");
     }
   };
 

@@ -170,11 +170,22 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
               }))
             : [];
 
+          // Get the Supabase access token
+          const { data: supabaseSession } = await supabase.auth.getSession();
+          const token = supabaseSession?.session?.access_token;
+
+          if (!token) {
+            throw new Error("User not authenticated"); // Handle if no token
+          }
+
           const response = await fetch(
             `${import.meta.env.VITE_BACKEND_URI}/api/chat`,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // Include the token here
+              },
               body: JSON.stringify({
                 message: [...messagesForNebius, { role: "user", content }]
                   .map((m) => m.content)
@@ -358,11 +369,22 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
 
   const generateChatTitle = async (chatId: string, firstAiResponse: string) => {
     try {
+      // Get the Supabase access token
+      const { data: supabaseSession } = await supabase.auth.getSession();
+      const token = supabaseSession?.session?.access_token;
+
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URI}/api/generate-title`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the token
+          },
           body: JSON.stringify({ message: firstAiResponse }),
         }
       );
@@ -374,6 +396,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
       const { title } = await response.json();
       return title;
     } catch (error) {
+      console.error("Error generating chat title:", error);
       return "Untitled Chat";
     }
   };
