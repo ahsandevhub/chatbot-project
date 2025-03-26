@@ -80,6 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         data: {
           firstName: firstName,
         },
+        emailRedirectTo: `${import.meta.env.VITE_APP_URL}/login"`,
       },
     });
     if (error) throw error;
@@ -90,20 +91,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string,
     firstName: string
   ) => {
+    // First, sign up the user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/login`, // Where to redirect after email confirmation
         data: {
           firstName: firstName,
         },
       },
     });
+
     if (error) throw error;
-    return {
-      user: data.user ?? null,
-      session: data.session ?? null,
-    };
+
+    // If email confirmations are disabled or you want immediate access:
+    if (data.session) {
+      // User is immediately signed in (email confirmations disabled)
+      return {
+        user: data.user,
+        session: data.session,
+      };
+    } else {
+      // If email confirmations are required, sign them in manually
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+      if (signInError) throw signInError;
+
+      return {
+        user: signInData.user,
+        session: signInData.session,
+      };
+    }
   };
 
   const googleSignIn = async () => {

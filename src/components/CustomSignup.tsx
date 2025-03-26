@@ -106,7 +106,7 @@ const CustomSignup = () => {
         duration: 3000,
       });
 
-      localStorage.setItem("runEdgeFunction", "true");
+      localStorage.setItem("runEdgeFunction", "false");
       // Redirect to Stripe checkout
       if (user?.id) {
         await handleStripeCheckout(user.id);
