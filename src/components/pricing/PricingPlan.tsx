@@ -36,16 +36,27 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
 
     try {
       const stripe = await stripePromise;
+
+      // 1. Retrieve the JWT from storage (e.g., localStorage)
+      const token = localStorage.getItem("jwtToken"); // Or wherever you store it
+
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            // 2. Add the JWT to the Authorization header
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ priceId: priceId, userId: user.id }),
         }
       );
+
+      if (!response.ok) {
+        // Handle non-2xx responses (e.g., 401, 403)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const session = await response.json();
       const result = await stripe!.redirectToCheckout({
