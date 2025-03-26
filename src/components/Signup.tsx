@@ -45,8 +45,7 @@ const Signup = () => {
       console.log("Signup successful!");
       toast.success("Account registered successfully!", {
         position: "top-center",
-        description:
-          "We've sent you an email please confirm it before login. It may take 1-3 minutes to arrive.",
+        description: "We've sent you an email please confirm it before login.",
         duration: 10000,
       });
       localStorage.setItem("runEdgeFunction", "true");

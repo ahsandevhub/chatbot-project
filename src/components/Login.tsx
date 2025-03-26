@@ -40,7 +40,6 @@ const Login = () => {
       } else {
         setErrorMsg("An unexpected error occurred.");
       }
-      toast.error(errorMsg || "Login failed", { position: "bottom-center" });
     } finally {
       setLoading(false);
     }
