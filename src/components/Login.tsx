@@ -20,6 +20,7 @@ const Login = () => {
     e.preventDefault();
     setErrorMsg(null);
     setLoading(true);
+
     try {
       await signIn(email, password);
       toast.success("Logged in successfully!", {
@@ -28,10 +29,18 @@ const Login = () => {
       navigate("/chat");
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setErrorMsg(error.message);
+        // Check for specific error message
+        if (error.message.toLowerCase().includes("email not confirmed")) {
+          setErrorMsg(
+            "Please verify your email address before logging in. Check your inbox for a confirmation link."
+          );
+        } else {
+          setErrorMsg(error.message);
+        }
       } else {
         setErrorMsg("An unexpected error occurred.");
       }
+      toast.error(errorMsg || "Login failed", { position: "bottom-center" });
     } finally {
       setLoading(false);
     }
