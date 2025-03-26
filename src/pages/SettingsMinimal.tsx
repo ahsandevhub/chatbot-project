@@ -116,8 +116,6 @@ const Settings: React.FC<SettingsProps> = () => {
     setIsLoading(true);
 
     try {
-      const stripe = await stripePromise;
-
       // Get the Supabase access token
       const { data: supabaseSession } = await supabase.auth.getSession();
       const token = supabaseSession?.session?.access_token;
@@ -127,7 +125,7 @@ const Settings: React.FC<SettingsProps> = () => {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
+        `${import.meta.env.VITE_BACKEND_URI}/api/upgrade-subscription`, // Updated endpoint
         {
           method: "POST",
           headers: {
@@ -135,22 +133,31 @@ const Settings: React.FC<SettingsProps> = () => {
             Authorization: `Bearer ${token}`, // Include the authorization header
           },
           body: JSON.stringify({
-            priceId: "price_1R6F3XC15A7InoP9X4zV8Ys1",
-            userId: user.id,
+            subscriptionId: subscription.stripe_subscription_id, // Send subscription ID
           }),
         }
       );
 
-      const session = await response.json();
-      const result = await stripe!.redirectToCheckout({
-        sessionId: session.id,
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to upgrade subscription.");
+      }
+
+      const updatedSubscription = await response.json();
+
+      // Handle successful upgrade (e.g., show success message, update UI)
+      toast.success("Subscription upgraded successfully!", {
+        position: "bottom-center",
       });
 
-      if (result.error) {
-        console.error(result.error.message);
-      }
+      // Optionally update the local subscription state with the updatedSubscription data.
+      // setSubscription(updatedSubscription);
+      // You may also want to refetch subscription information from your backend.
     } catch (error) {
-      console.error("Checkout error:", error);
+      console.error("Upgrade error:", error);
+      toast.error(error.message || "An error occurred while upgrading.", {
+        position: "bottom-center",
+      });
     } finally {
       setIsLoading(false);
     }

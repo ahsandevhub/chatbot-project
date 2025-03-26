@@ -25,11 +25,9 @@ const ChatIndex: React.FC = () => {
       const newId = await addChat(title);
       setConversationId(newId); // Set conversation ID
 
-      // Redirect immediately to the chat page
-      navigate(`/chat/${newId}`);
-
-      // Continue processing messages
       await addMessage(newId, content, "user");
+
+      navigate(`/chat/${newId}`);
 
       setLoadingResponse(false);
     } catch (error) {

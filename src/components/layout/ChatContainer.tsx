@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { Components } from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   dracula,
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { useChat } from "../../context/ChatContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -13,6 +14,10 @@ import { ScrollArea } from "../ui/scroll-area";
 
 interface ChatContainerProps {
   conversationId: string;
+}
+
+interface CustomComponents extends Components {
+  think: React.FC<{ children?: React.ReactNode }>;
 }
 
 type CodeComponentProps = {
@@ -50,6 +55,98 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   }, [conversationMessages]);
+
+  const customComponents: CustomComponents = {
+    think: ({ children }) => (
+      <div className="relative my-4 py-2 px-3 text-sm border-l-4 border-gray-400 bg-gray-50 dark:bg-blue-900/20">
+        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300 mb-1">
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span className="font-semibold">Think</span>
+        </div>
+        <div className="prose dark:prose-invert prose-sm max-w-none">
+          {children}
+        </div>
+      </div>
+    ),
+    code: ({ inline, className, children, ...props }: CodeComponentProps) => {
+      const match = /language-(\w+)/.exec(className || "");
+      const value = String(children).trim();
+
+      return !inline && match ? (
+        <SyntaxHighlighter
+          style={theme === "dark" ? dracula : oneLight}
+          language={match[1]}
+          PreTag="div"
+          className="font-mono text-sm p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800"
+          {...props}
+        >
+          {value}
+        </SyntaxHighlighter>
+      ) : (
+        <code
+          className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 text-sm font-mono rounded"
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
+    h1: ({ children }) => (
+      <h1 className="text-3xl font-bold mt-4 mb-2">{children}</h1>
+    ),
+    h2: ({ children }) => (
+      <h2 className="text-2xl font-semibold mt-3 mb-2">{children}</h2>
+    ),
+    h3: ({ children }) => (
+      <h3 className="text-xl font-semibold mt-3 mb-2">{children}</h3>
+    ),
+    p: ({ children }) => <p className="mb-2 leading-relaxed">{children}</p>, // Added better spacing
+    ul: ({ children }) => (
+      <ul className="list-disc list-outside pl-5 mb-2">{children}</ul>
+    ), // Fix for bullet points
+    ol: ({ children }) => (
+      <ol className="list-decimal list-outside pl-5 mb-2">{children}</ol>
+    ), // Fix for ordered lists
+    li: ({ children }) => <li className="mb-1">{children}</li>, // Proper spacing in lists
+    blockquote: ({ children }) => (
+      <blockquote className="border-l-4 border-gray-500 pl-4 italic text-gray-600 dark:text-gray-300 mb-2">
+        {children}
+      </blockquote>
+    ),
+    strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+    em: ({ children }) => <em className="italic">{children}</em>,
+    table: ({ children }) => (
+      <div className="overflow-auto max-w-full">
+        <table className="table-auto text-sm border-collapse border border-gray-200 mb-2">
+          {children}
+        </table>
+      </div>
+    ),
+    thead: ({ children }) => (
+      <thead className="bg-gray-200 dark:bg-gray-700">{children}</thead>
+    ),
+    tbody: ({ children }) => <tbody className="divide-y">{children}</tbody>,
+    tr: ({ children }) => (
+      <tr className="border-b *:border border-gray-200">{children}</tr>
+    ),
+    th: ({ children }) => (
+      <th className="sm:px-4 px-3 py-2 text-left bg-gray-100 dark:bg-gray-700">
+        {children}
+      </th>
+    ),
+    td: ({ children }) => <td className="sm:px-4 px-3 py-2">{children}</td>,
+    a: ({ children, href, ...props }) => (
+      <a href={href} className="text-blue-600 hover:underline" {...props}>
+        {children}
+      </a>
+    ),
+  };
 
   if (loadingMessages) {
     return (
@@ -119,125 +216,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
                         >
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
-                            components={{
-                              code: ({
-                                inline,
-                                className,
-                                children,
-                                ...props
-                              }: CodeComponentProps) => {
-                                const match = /language-(\w+)/.exec(
-                                  className || ""
-                                );
-                                const value = String(children).trim();
-
-                                return !inline && match ? (
-                                  <SyntaxHighlighter
-                                    style={
-                                      theme === "dark" ? dracula : oneLight
-                                    }
-                                    language={match[1]}
-                                    PreTag="div"
-                                    className="font-mono text-sm p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800"
-                                    {...props}
-                                  >
-                                    {value}
-                                  </SyntaxHighlighter>
-                                ) : (
-                                  <code
-                                    className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 text-sm font-mono rounded"
-                                    {...props}
-                                  >
-                                    {children}
-                                  </code>
-                                );
-                              },
-                              h1: ({ children }) => (
-                                <h1 className="text-3xl font-bold mt-4 mb-2">
-                                  {children}
-                                </h1>
-                              ),
-                              h2: ({ children }) => (
-                                <h2 className="text-2xl font-semibold mt-3 mb-2">
-                                  {children}
-                                </h2>
-                              ),
-                              h3: ({ children }) => (
-                                <h3 className="text-xl font-semibold mt-3 mb-2">
-                                  {children}
-                                </h3>
-                              ),
-                              p: ({ children }) => (
-                                <p className="mb-2 leading-relaxed">
-                                  {children}
-                                </p>
-                              ), // Added better spacing
-                              ul: ({ children }) => (
-                                <ul className="list-disc list-outside pl-5 mb-2">
-                                  {children}
-                                </ul>
-                              ), // Fix for bullet points
-                              ol: ({ children }) => (
-                                <ol className="list-decimal list-outside pl-5 mb-2">
-                                  {children}
-                                </ol>
-                              ), // Fix for ordered lists
-                              li: ({ children }) => (
-                                <li className="mb-1">{children}</li>
-                              ), // Proper spacing in lists
-                              blockquote: ({ children }) => (
-                                <blockquote className="border-l-4 border-gray-500 pl-4 italic text-gray-600 dark:text-gray-300 mb-2">
-                                  {children}
-                                </blockquote>
-                              ),
-                              strong: ({ children }) => (
-                                <strong className="font-bold">
-                                  {children}
-                                </strong>
-                              ),
-                              em: ({ children }) => (
-                                <em className="italic">{children}</em>
-                              ),
-                              table: ({ children }) => (
-                                <div className="overflow-auto max-w-full">
-                                  <table className="table-auto text-sm border-collapse border border-gray-200 mb-2">
-                                    {children}
-                                  </table>
-                                </div>
-                              ),
-                              thead: ({ children }) => (
-                                <thead className="bg-gray-200 dark:bg-gray-700">
-                                  {children}
-                                </thead>
-                              ),
-                              tbody: ({ children }) => (
-                                <tbody className="divide-y">{children}</tbody>
-                              ),
-                              tr: ({ children }) => (
-                                <tr className="border-b *:border border-gray-200">
-                                  {children}
-                                </tr>
-                              ),
-                              th: ({ children }) => (
-                                <th className="sm:px-4 px-3 py-2 text-left bg-gray-100 dark:bg-gray-700">
-                                  {children}
-                                </th>
-                              ),
-                              td: ({ children }) => (
-                                <td className="sm:px-4 px-3 py-2">
-                                  {children}
-                                </td>
-                              ),
-                              a: ({ children, href, ...props }) => (
-                                <a
-                                  href={href}
-                                  className="text-blue-600 hover:underline"
-                                  {...props}
-                                >
-                                  {children}
-                                </a>
-                              ),
-                            }}
+                            rehypePlugins={[rehypeRaw]}
+                            components={customComponents}
                           >
                             {message.content}
                           </ReactMarkdown>
