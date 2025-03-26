@@ -8,13 +8,13 @@ import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CustomSignup = () => {
+const GlobalSignup = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { customSignUp, customGoogleSignIn } = useAuth();
+  const { globalSignUp, customGoogleSignIn } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -22,8 +22,7 @@ const CustomSignup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [searchParams] = useSearchParams();
-  const priceId =
-    searchParams.get("priceId") || import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID;
+  const priceId = import.meta.env.VITE_GLOBAL_MACRO_PRICE_ID;
 
   const validateEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -98,19 +97,19 @@ const CustomSignup = () => {
     }
 
     try {
-      const { user } = await customSignUp(email.trim(), password, firstName);
+      const { user } = await globalSignUp(email.trim(), password, firstName);
       console.log("Signup successful!");
       toast.success("Account registered successfully!", {
         position: "top-center",
-        description: "Redirecting to payment page...",
+        description: "Confirm your email to complete the payment.",
         duration: 3000,
       });
 
       localStorage.setItem("runEdgeFunction", "false");
       // Redirect to Stripe checkout
-      if (user?.id) {
-        await handleStripeCheckout(user.id);
-      }
+      // if (user?.id) {
+      //   await handleStripeCheckout(user.id);
+      // }
     } catch (error: unknown) {
       let message = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -305,4 +304,4 @@ const CustomSignup = () => {
   );
 };
 
-export default CustomSignup;
+export default GlobalSignup;

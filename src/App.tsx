@@ -12,7 +12,8 @@ import {
   useLocation,
 } from "react-router-dom";
 import AuthRedirectHandler from "./components/AuthRedirectHandler";
-import CustomSignup from "./components/CustomSignup";
+import EquitySignup from "./components/EquitySignup";
+import GlobalSignup from "./components/GlobalSignup";
 import Login from "./components/Login";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -70,7 +71,8 @@ const App = () => (
               <Route element={<PublicRoute />}>
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/custom-signup" element={<CustomSignup />} />
+                <Route path="/equity-signup" element={<EquitySignup />} />
+                <Route path="/global-signup" element={<GlobalSignup />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
               </Route>
 
