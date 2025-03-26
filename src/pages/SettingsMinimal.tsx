@@ -117,12 +117,12 @@ const Settings: React.FC<SettingsProps> = () => {
 
     try {
       // Get the Supabase access token
-      const { data: supabaseSession } = await supabase.auth.getSession();
-      const token = supabaseSession?.session?.access_token;
-
-      if (!token) {
+      const { data: supabaseSession, error } = await supabase.auth.getSession();
+      if (error || !supabaseSession?.session?.access_token) {
         throw new Error("User not authenticated");
       }
+
+      const token = supabaseSession.session.access_token;
 
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URI}/api/upgrade-subscription`, // Updated endpoint
@@ -130,29 +130,40 @@ const Settings: React.FC<SettingsProps> = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the authorization header
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             subscriptionId: subscription.stripe_subscription_id, // Send subscription ID
+            userId: user.id, // Send user ID
+            priceId: import.meta.env.VITE_GLOBAL_MACRO_PRICE_ID, // Corrected price ID
           }),
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to upgrade subscription.");
+        let errorMessage = "Failed to upgrade subscription.";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (jsonError) {
+          console.error("Error parsing response:", jsonError);
+        }
+        throw new Error(errorMessage);
       }
 
       const updatedSubscription = await response.json();
 
-      // Handle successful upgrade (e.g., show success message, update UI)
+      console.log("====================================");
+      console.log(updatedSubscription);
+      console.log("====================================");
+
+      // Handle successful upgrade
       toast.success("Subscription upgraded successfully!", {
         position: "bottom-center",
       });
 
-      // Optionally update the local subscription state with the updatedSubscription data.
+      // Optionally update local subscription state
       // setSubscription(updatedSubscription);
-      // You may also want to refetch subscription information from your backend.
     } catch (error) {
       console.error("Upgrade error:", error);
       toast.error(error.message || "An error occurred while upgrading.", {
