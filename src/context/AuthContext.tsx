@@ -7,16 +7,11 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName: string) => Promise<void>;
-  equitySignUp: (
+  customSignUp: (
     email: string,
     password: string,
     firstName: string
-  ) => Promise<void>;
-  globalSignUp: (
-    email: string,
-    password: string,
-    firstName: string
-  ) => Promise<void>;
+  ) => Promise<{ user: User | null }>;
   customGoogleSignIn: () => Promise<{
     data: { provider: string; url: string } | null;
     error: AuthError | null;
@@ -91,7 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (error) throw error;
   };
 
-  const equitySignUp = async (
+  const customSignUp = async (
     email: string,
     password: string,
     firstName: string
@@ -101,9 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/email-confirm?priceId=${
-          import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID
-        }`,
+        emailRedirectTo: `${window.location.origin}/login/`, // Where to redirect after email confirmation
         data: {
           firstName: firstName,
         },
@@ -111,28 +104,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     if (error) throw error;
-  };
 
-  const globalSignUp = async (
-    email: string,
-    password: string,
-    firstName: string
-  ) => {
-    // First, sign up the user
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/email-confirm?priceId=${
-          import.meta.env.VITE_GLOBAL_MACRO_PRICE_ID
-        }`,
-        data: {
-          firstName: firstName,
-        },
-      },
-    });
+    setUser(data.user);
+    setSession(data.session);
 
-    if (error) throw error;
+    return {
+      user: data.user ?? null,
+      session: data.session ?? null,
+    };
   };
 
   const googleSignIn = async () => {
@@ -170,8 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading,
         signIn,
         signUp,
-        equitySignUp,
-        globalSignUp,
+        customSignUp,
         customGoogleSignIn,
         signOut,
         googleSignIn,

@@ -8,13 +8,13 @@ import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const EquitySignup = () => {
+const CustomSignup = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { equitySignUp, customGoogleSignIn } = useAuth();
+  const { customSignUp, customGoogleSignIn } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -22,7 +22,8 @@ const EquitySignup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [searchParams] = useSearchParams();
-  const priceId = import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID;
+  const priceId =
+    searchParams.get("priceId") || import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID;
 
   const validateEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,49 +33,28 @@ const EquitySignup = () => {
   const handleStripeCheckout = async (userId: string) => {
     const stripe = await stripePromise;
 
-    try {
-      // 1. Get the Supabase access token
-      const { data: supabaseSession } = await supabase.auth.getSession();
-      const token = supabaseSession?.session?.access_token; // Retrieve Supabase JWT
-
-      if (!token) throw new Error("User not authenticated");
-
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Use Supabase JWT
-          },
-          body: JSON.stringify({
-            priceId,
-            userId: userId,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId,
+          userId: userId,
+        }),
       }
+    );
 
-      const session = await response.json();
+    const session = await response.json();
+    const result = await stripe!.redirectToCheckout({
+      sessionId: session.id,
+    });
 
-      if (!session.id) {
-        throw new Error("Session ID is missing in response");
-      }
-
-      const result = await stripe!.redirectToCheckout({
-        sessionId: session.id,
-      });
-
-      if (result.error) {
-        console.error(result.error.message);
-        toast.error("Failed to redirect to payment page");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error("Checkout failed. Please try again.");
+    if (result.error) {
+      console.error(result.error.message);
+      toast.error("Failed to redirect to payment page");
     }
   };
 
@@ -97,19 +77,19 @@ const EquitySignup = () => {
     }
 
     try {
-      await equitySignUp(email.trim(), password, firstName);
+      const { user } = await customSignUp(email.trim(), password, firstName);
       console.log("Signup successful!");
       toast.success("Account registered successfully!", {
         position: "top-center",
-        description: "Confirm your email to complete the payment.",
+        description: "Redirecting to payment page...",
         duration: 3000,
       });
 
-      localStorage.setItem("runEdgeFunction", "false");
+      localStorage.setItem("runEdgeFunction", "true");
       // Redirect to Stripe checkout
-      // if (user?.id) {
-      //   await handleStripeCheckout(user.id);
-      // }
+      if (user?.id) {
+        await handleStripeCheckout(user.id);
+      }
     } catch (error: unknown) {
       let message = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -304,4 +284,4 @@ const EquitySignup = () => {
   );
 };
 
-export default EquitySignup;
+export default CustomSignup;

@@ -1,4 +1,3 @@
-// In EmailConfirm.tsx
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import { loadStripe } from "@stripe/stripe-js";
@@ -20,70 +19,68 @@ const EmailConfirm = () => {
   useEffect(() => {
     if (!user || !priceId) {
       console.log("userId or priceId not found! redirecting to login page...");
-      navigate("/login");
       return;
     }
 
     console.log("PriceId: ", priceId);
-    console.log("PriceId: ", user.id);
+    console.log("UserId: ", user.id);
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev === 1) {
           clearInterval(timer);
-          setTimeout(initiateCheckout, 3000);
+          setTimeout(initiateCheckout, 3000); // Trigger after 3 more seconds
         }
         return prev - 1;
       });
     }, 1000);
 
-    const initiateCheckout = async () => {
-      try {
-        const stripe = await stripePromise;
-
-        const { data: supabaseSession } = await supabase.auth.getSession();
-        const token = supabaseSession?.session?.access_token;
-
-        console.log("Token: ", token);
-
-        if (!token) throw new Error("User not authenticated");
-
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              priceId,
-              userId: user.id,
-            }),
-          }
-        );
-
-        const session = await response.json();
-
-        if (!session.id) {
-          throw new Error("Session ID is missing in response");
-        }
-
-        const result = await stripe!.redirectToCheckout({
-          sessionId: session.id,
-        });
-        if (result.error) {
-          console.error(result.error.message);
-          toast.error("Failed to redirect to payment page");
-        }
-      } catch (error) {
-        console.error("Checkout error:", error);
-        toast.error("Checkout failed. Please try again.");
-      }
-    };
-
     return () => clearInterval(timer);
   }, [user, priceId, navigate]);
+
+  const initiateCheckout = async () => {
+    try {
+      const stripe = await stripePromise;
+      const { data: supabaseSession } = await supabase.auth.getSession();
+      const token = supabaseSession?.session?.access_token;
+
+      console.log("Token: ", token);
+
+      if (!token) throw new Error("User not authenticated");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            priceId,
+            userId: user.id,
+          }),
+        }
+      );
+
+      const session = await response.json();
+
+      if (!session.id) {
+        throw new Error("Session ID is missing in response");
+      }
+
+      const result = await stripe!.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (result.error) {
+        console.error(result.error.message);
+        toast.error("Failed to redirect to payment page");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Checkout failed. Please try again.");
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">

@@ -12,8 +12,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import AuthRedirectHandler from "./components/AuthRedirectHandler";
-import EquitySignup from "./components/EquitySignup";
-import GlobalSignup from "./components/GlobalSignup";
+import CustomSignup from "./components/CustomSignup";
 import Login from "./components/Login";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -27,7 +26,6 @@ import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import CancelPage from "./pages/CancelPage";
 import Chat from "./pages/Chat";
 import ChatIndex from "./pages/ChatIndex";
-import EmailConfirm from "./pages/EmailConfirm";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
@@ -72,9 +70,7 @@ const App = () => (
               <Route element={<PublicRoute />}>
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/email-confirm" element={<EmailConfirm />} />
-                <Route path="/equity-signup" element={<EquitySignup />} />
-                <Route path="/global-signup" element={<GlobalSignup />} />
+                <Route path="/custom-signup" element={<CustomSignup />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
               </Route>
 

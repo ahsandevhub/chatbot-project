@@ -111,7 +111,7 @@ export function Pricing({
                   "The go-to plan for traders who need historical intraday stock data from the world's largest stock exchanges.",
                 action: {
                   label: "Sign Up",
-                  href: `/equity-signup?priceId=${
+                  href: `/custom-signup?priceId=${
                     import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID
                   }`,
                 },
@@ -123,7 +123,7 @@ export function Pricing({
                   "Our full-fledged plan for traders who need access to the entire enchilada.",
                 action: {
                   label: "Sign Up",
-                  href: `/global-signup?priceId=${
+                  href: `/custom-signup?priceId=${
                     import.meta.env.VITE_GLOBAL_MACRO_PRICE_ID
                   }`,
                 },
