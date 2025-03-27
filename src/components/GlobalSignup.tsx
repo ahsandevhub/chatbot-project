@@ -97,7 +97,7 @@ const GlobalSignup = () => {
     }
 
     try {
-      const { user } = await globalSignUp(email.trim(), password, firstName);
+      await globalSignUp(email.trim(), password, firstName);
       console.log("Signup successful!");
       toast.success("Account registered successfully!", {
         position: "top-center",

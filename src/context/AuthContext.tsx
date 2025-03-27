@@ -11,12 +11,12 @@ interface AuthContextType {
     email: string,
     password: string,
     firstName: string
-  ) => Promise<{ user: User | null; session: Session | null }>;
+  ) => Promise<void>;
   globalSignUp: (
     email: string,
     password: string,
     firstName: string
-  ) => Promise<{ user: User | null; session: Session | null }>;
+  ) => Promise<void>;
   customGoogleSignIn: () => Promise<{
     data: { provider: string; url: string } | null;
     error: AuthError | null;
@@ -101,7 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/custom-signup?priceId=${
+        emailRedirectTo: `${window.location.origin}/email-confirm?priceId=${
           import.meta.env.VITE_EQUITY_ANALYST_PRICE_ID
         }`,
         data: {
@@ -111,29 +111,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     if (error) throw error;
-
-    // If email confirmations are disabled or you want immediate access:
-    if (data.session) {
-      // User is immediately signed in (email confirmations disabled)
-      return {
-        user: data.user,
-        session: data.session,
-      };
-    } else {
-      // If email confirmations are required, sign them in manually
-      const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-      if (signInError) throw signInError;
-
-      return {
-        user: signInData.user,
-        session: signInData.session,
-      };
-    }
   };
 
   const globalSignUp = async (
@@ -146,7 +123,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/custom-signup?priceId=${
+        emailRedirectTo: `${window.location.origin}/email-confirm?priceId=${
           import.meta.env.VITE_GLOBAL_MACRO_PRICE_ID
         }`,
         data: {
@@ -156,29 +133,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     if (error) throw error;
-
-    // If email confirmations are disabled or you want immediate access:
-    if (data.session) {
-      // User is immediately signed in (email confirmations disabled)
-      return {
-        user: data.user,
-        session: data.session,
-      };
-    } else {
-      // If email confirmations are required, sign them in manually
-      const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-      if (signInError) throw signInError;
-
-      return {
-        user: signInData.user,
-        session: signInData.session,
-      };
-    }
   };
 
   const googleSignIn = async () => {

@@ -97,7 +97,7 @@ const EquitySignup = () => {
     }
 
     try {
-      const { user } = await equitySignUp(email.trim(), password, firstName);
+      await equitySignUp(email.trim(), password, firstName);
       console.log("Signup successful!");
       toast.success("Account registered successfully!", {
         position: "top-center",
