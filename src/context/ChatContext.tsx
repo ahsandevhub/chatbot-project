@@ -43,6 +43,10 @@ interface ChatContextType {
   isGeneratingResponse: Record<string, boolean>;
   stopResponseGeneration: (chatId: string) => void;
   loading: boolean;
+  generateChatTitle: (
+    chatId: string,
+    firstAiResponse: string
+  ) => Promise<string>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -457,6 +461,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({
         isGeneratingResponse,
         stopResponseGeneration,
         loading,
+        generateChatTitle,
       }}
     >
       {children}

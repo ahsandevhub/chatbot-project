@@ -7,7 +7,7 @@ import { useChat } from "../context/ChatContext";
 import { useIsMobile } from "../hooks/use-mobile";
 
 const ChatIndex: React.FC = () => {
-  const { addChat, addMessage } = useChat();
+  const { addChat, addMessage, renameChat, generateChatTitle } = useChat();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
@@ -21,13 +21,17 @@ const ChatIndex: React.FC = () => {
   const handleSendMessage = async (content: string) => {
     try {
       setLoadingResponse(true);
-      const title = content.split(" ").slice(0, 4).join(" ") + "...";
+      const title = "New Chat";
       const newId = await addChat(title);
-      setConversationId(newId); // Set conversation ID
-
-      await addMessage(newId, content, "user");
+      setConversationId(newId);
 
       navigate(`/chat/${newId}`);
+
+      await addMessage(newId, content, "user");
+      const generatedTitle = await generateChatTitle(newId, content);
+      if (generatedTitle) {
+        renameChat(newId, generatedTitle);
+      }
 
       setLoadingResponse(false);
     } catch (error) {
