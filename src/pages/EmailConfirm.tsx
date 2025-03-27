@@ -2,7 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import { loadStripe } from "@stripe/stripe-js";
 import { CheckCircleIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,25 +16,29 @@ const EmailConfirm = () => {
   const priceId = searchParams.get("priceId");
   const { user } = useAuth();
 
-  const handleStripeCheckout = useCallback(
-    async (userId: string) => {
-      if (!priceId) {
-        toast.error("Missing priceId");
-        navigate("/login");
-        return;
-      }
+  useEffect(() => {
+    if (!user || !priceId) {
+      console.log("userId or priceId not found! redirecting to login page...");
 
-      const stripe = await stripePromise;
+      navigate("/login");
+      return;
+    }
 
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(timer);
+          setTimeout(initiateCheckout, 3000);
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    const initiateCheckout = async () => {
       try {
+        const stripe = await stripePromise;
         const { data: supabaseSession } = await supabase.auth.getSession();
         const token = supabaseSession?.session?.access_token;
-
-        if (!token) {
-          toast.error("Please log in to continue");
-          navigate("/login");
-          return;
-        }
 
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
@@ -46,14 +50,10 @@ const EmailConfirm = () => {
             },
             body: JSON.stringify({
               priceId,
-              userId,
+              userId: user.id,
             }),
           }
         );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
         const session = await response.json();
 
@@ -64,7 +64,6 @@ const EmailConfirm = () => {
         const result = await stripe!.redirectToCheckout({
           sessionId: session.id,
         });
-
         if (result.error) {
           console.error(result.error.message);
           toast.error("Failed to redirect to payment page");
@@ -73,30 +72,10 @@ const EmailConfirm = () => {
         console.error("Checkout error:", error);
         toast.error("Checkout failed. Please try again.");
       }
-    },
-    [priceId, navigate]
-  );
-
-  useEffect(() => {
-    if (countdown <= 0) return;
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
+    };
 
     return () => clearInterval(timer);
-  }, [countdown]);
-
-  useEffect(() => {
-    if (countdown > 0) return;
-
-    if (!user || !priceId) {
-      navigate("/login");
-      return;
-    }
-
-    handleStripeCheckout(user.id);
-  }, [countdown, user, priceId, navigate, handleStripeCheckout]);
+  }, [user, priceId, navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
