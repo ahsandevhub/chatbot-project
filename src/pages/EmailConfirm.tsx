@@ -24,6 +24,9 @@ const EmailConfirm = () => {
       return;
     }
 
+    console.log("PriceId: ", priceId);
+    console.log("PriceId: ", user.id);
+
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev === 1) {
@@ -37,8 +40,13 @@ const EmailConfirm = () => {
     const initiateCheckout = async () => {
       try {
         const stripe = await stripePromise;
+
         const { data: supabaseSession } = await supabase.auth.getSession();
         const token = supabaseSession?.session?.access_token;
+
+        console.log("Token: ", token);
+
+        if (!token) throw new Error("User not authenticated");
 
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URI}/api/create-checkout-session`,
