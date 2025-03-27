@@ -123,8 +123,8 @@ const PricingPlan: React.FC<PricingPlanProps> = ({
       </div>
       <CardContent className="space-y-2 p-4">
         {features.map((feature, index) => (
-          <div key={index} className="flex items-center text-sm">
-            ✓ {feature}
+          <div key={index} className="flex gap-2 text-sm">
+            <span className="mt-[1px]">✓</span> <span>{feature}</span>
           </div>
         ))}
       </CardContent>

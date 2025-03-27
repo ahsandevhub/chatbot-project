@@ -267,7 +267,7 @@ const Settings: React.FC<SettingsProps> = () => {
             </p>
             <span>{credits?.toString() || "0"}</span>
           </div>
-          <div className="mt-4">
+          {/* <div className="mt-4">
             {tier.toLowerCase() === "intern" ? (
               <div className="flex justify-center">
                 <Button
@@ -300,6 +300,31 @@ const Settings: React.FC<SettingsProps> = () => {
                       ? "flex-1"
                       : "w-max mx-auto"
                   )}
+                  onClick={handleManageSubscription}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Loading..." : "Manage Subscription"}
+                </Button>
+              </div>
+            )}
+          </div> */}
+          <div className="mt-4">
+            {tier.toLowerCase() === "intern" ? (
+              <div className="flex justify-center">
+                <Button
+                  className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 
+				 					disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600"
+                  onClick={() => setIsPricingOpen(true)}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Loading..." : "Upgrade Plan"}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <Button
+                  className="px-6 text-sm py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 
+                   disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:hover:bg-gray-600"
                   onClick={handleManageSubscription}
                   disabled={isLoading}
                 >
