@@ -1,3 +1,4 @@
+// In EmailConfirm.tsx
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import { loadStripe } from "@stripe/stripe-js";
@@ -19,7 +20,6 @@ const EmailConfirm = () => {
   useEffect(() => {
     if (!user || !priceId) {
       console.log("userId or priceId not found! redirecting to login page...");
-
       navigate("/login");
       return;
     }
