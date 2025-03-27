@@ -224,9 +224,12 @@ const Signup = () => {
           </div>
           <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
             Already have an account?{" "}
-            <a href="/login" className="text-indigo-500 hover:underline">
+            <button
+              onClick={() => navigate("/login")}
+              className="text-indigo-500 hover:underline"
+            >
               Login
-            </a>
+            </button>
           </p>
         </motion.div>
       </AnimatePresence>
