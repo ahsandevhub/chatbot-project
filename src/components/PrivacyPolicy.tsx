@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, DownloadIcon, Shield } from "lucide-react";
+import { ArrowLeftIcon, Shield } from "lucide-react";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
@@ -634,16 +634,6 @@ const PrivacyPolicy: React.FC = () => {
               support@stonk-hub.com
             </a>
           </p>
-        </div>
-
-        <div className="my-12 text-center">
-          <a
-            href="/downloads/Privacy-Policy.pdf"
-            download
-            className="inline-flex items-center gap-2 px-6 py-2 text-white bg-gray-600 hover:bg-gray-700 rounded-md"
-          >
-            <DownloadIcon className="w-5 h-5" /> Download Policy
-          </a>
         </div>
       </main>
 

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ArrowLeftIcon, DownloadIcon, FileText } from "lucide-react";
+import { ArrowLeftIcon, FileText } from "lucide-react";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "./Footer";
@@ -337,22 +337,7 @@ const TermsOfService: React.FC = () => {
             </a>
           </p>
         </div>
-
-        <div className="my-12 text-center">
-          <a
-            href="/downloads/Terms-of-Service.pdf"
-            download
-            className={cn(
-              "inline-flex items-center gap-2 px-6 py-2",
-              "text-white bg-gray-600 hover:bg-gray-700",
-              "rounded-md transition-colors duration-200"
-            )}
-          >
-            <DownloadIcon className="w-5 h-5" /> Download Terms of Service
-          </a>
-        </div>
       </main>
-
       <Footer />
     </div>
   );

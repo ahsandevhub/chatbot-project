@@ -7,7 +7,7 @@ const ProtectedRoute = () => {
 
   if (isLoading) {
     // Render a loading indicator or null while loading
-    return <div>Loading...</div>; // Or return null;
+    return null; // Or return null;
   }
 
   if (!user) {

@@ -154,7 +154,11 @@ const CustomSignup = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
+    <div className="relative flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <div className="absolute max-w-md text-center top-20 left-1/2 -translate-x-1/2 bg-gray-200 rounded-full px-4 py-1 text-sm">
+        Please use a valid email address otherwise you won't receive the
+        confrimation mail.
+      </div>
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}

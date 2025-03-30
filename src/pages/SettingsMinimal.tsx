@@ -24,43 +24,53 @@ const Settings: React.FC<SettingsProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsInitialLoading(false); // Set loading to false if no user
+      return;
+    }
 
-    const fetchSubscription = async () => {
-      const { data, error } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+    const fetchData = async () => {
+      setIsInitialLoading(true);
+      try {
+        // Fetch subscription and credits in parallel
+        const [subscriptionRes, creditsRes] = await Promise.all([
+          supabase
+            .from("subscriptions")
+            .select("*")
+            .eq("user_id", user.id)
+            .single(),
+          supabase
+            .from("user_credits")
+            .select("credits_available")
+            .eq("user_id", user.id)
+            .single(),
+        ]);
 
-      if (error) {
+        if (subscriptionRes.error) {
+          setTier("intern");
+        } else {
+          setSubscription(subscriptionRes.data);
+          setTier(subscriptionRes.data?.plan || "intern");
+        }
+
+        if (!creditsRes.error) {
+          setCredits(creditsRes.data?.credits_available || 0);
+        }
+      } catch (error) {
+        console.error("Error fetching settings data:", error);
         setTier("intern");
-        return;
+        setCredits(0);
+      } finally {
+        setIsInitialLoading(false);
       }
-
-      setSubscription(data);
-      setTier(data?.plan || "intern");
     };
 
-    const fetchCredits = async () => {
-      const { data, error } = await supabase
-        .from("user_credits")
-        .select("credits_available")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) {
-        return; // Exit on error
-      }
-      setCredits(data?.credits_available || 0); // Ensure credits is always a number, default to 0
-    };
-
-    fetchSubscription();
-    fetchCredits();
+    fetchData();
   }, [user]);
 
   const formatTierName = (tier: string) => {
@@ -226,6 +236,60 @@ const Settings: React.FC<SettingsProps> = () => {
       setIsLoading(false);
     }
   };
+
+  if (isInitialLoading) {
+    return (
+      <div className="overflow-y-auto animate-pulse md:max-h-[80vh] max-w-md">
+        {/* Header Skeleton */}
+        <div className="header px-4 border-b">
+          <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+        </div>
+
+        {/* Body Skeleton */}
+        <div className="body px-6 py-6 space-y-6">
+          {/* Theme Section */}
+          <div className="border-b pb-6 space-y-4">
+            <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="flex justify-between items-center">
+              <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+            </div>
+          </div>
+
+          {/* Subscription Section */}
+          <div className="border-b pb-6 space-y-4">
+            <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              </div>
+            </div>
+            <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+          </div>
+
+          {/* Data & Privacy Section */}
+          <div className="border-b pb-6 space-y-4">
+            <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="flex justify-between items-center">
+              <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-9 w-20 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+            </div>
+          </div>
+
+          {/* Logout Section */}
+          <div className="flex justify-between items-center">
+            <div className="h-4 w-36 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-9 w-20 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-y-auto md:max-h-[80vh] max-w-md">

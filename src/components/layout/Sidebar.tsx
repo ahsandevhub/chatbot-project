@@ -104,6 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const [visibleChats, setVisibleChats] = useState(30);
   const [allChats, setAllChats] = useState<any[]>([]);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Sort chats by date
   useEffect(() => {
@@ -199,11 +200,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   useEffect(() => {
     if (!user) {
       setLoadingPlan(false);
+      setUserPlan("intern");
+      setIsLoading(false); // Add this line
       return;
     }
 
     const fetchUserPlan = async () => {
       setLoadingPlan(true);
+      setIsLoading(true); // Add this line
       try {
         const { data, error } = await supabase
           .from("subscriptions")
@@ -220,11 +224,59 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
         setUserPlan("intern");
       } finally {
         setLoadingPlan(false);
+        setIsLoading(false); // Add this line
       }
     };
 
     fetchUserPlan();
   }, [user]);
+
+  if (isLoading) {
+    return (
+      <aside
+        className={cn(
+          "fixed animate-pulse top-0 bottom-0 left-0 flex flex-col h-full bg-background text-foreground transition-transform z-20 border-r border-border",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+          isMobile ? "w-full" : "w-[260px]"
+        )}
+      >
+        {/* Header Skeleton */}
+        <div className="flex-shrink-0 p-2 flex items-center justify-between h-14 border-b border-border">
+          <div className="p-2 rounded-md bg-gray-200 dark:bg-gray-700 h-7 w-7"></div>
+          <div className="p-2 rounded-md bg-gray-200 dark:bg-gray-700 h-7 w-7"></div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="py-2 px-2 space-y-5">
+            {/* Date Group Skeleton */}
+            {[1, 2, 3].map((group) => (
+              <div key={group} className="space-y-1">
+                <div className="px-3 h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                <div className="space-y-1">
+                  {/* Chat Item Skeletons */}
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      key={item}
+                      className="flex items-center justify-between rounded-md px-3 py-2"
+                    >
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                      <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer Skeleton */}
+        {/* <div className="flex-shrink-0 p-3 border-t border-border">
+          <div className="w-full h-10 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        </div> */}
+      </aside>
+    );
+  }
 
   return (
     <aside
