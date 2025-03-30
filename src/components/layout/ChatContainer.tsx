@@ -62,7 +62,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ conversationId }) => {
       <div className="relative my-4 py-2 px-3 text-sm border-l-4 border-gray-400 bg-gray-50 dark:bg-blue-900/20">
         <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300 mb-1">
           <BrainCircuit className="h-4 w-4" />
-          <span className="font-semibold">Branstorming</span>
+          <span className="font-semibold">Brainstorming</span>
         </div>
         <div className="prose dark:prose-invert prose-sm max-w-none">
           {children}
