@@ -1,0 +1,33 @@
+runtime: nodejs22
+env: standard
+env_variables:
+  VITE_SUPABASE_URL: "https://rwbfjxwueaygxtyuwrvu.supabase.co"
+  VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3YmZqeHd1ZWF5Z3h0eXV3cnZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyNTA4OTEsImV4cCI6MjA1NzgyNjg5MX0.e1vE3i_Wbtys7FywZzpNFgwXR1ICK_KWm_hdcWpirVM"
+
+  VITE_POSTHOG_KEY: "phc_XDf7S49lleLIBd3zD131aW354oHi1ctVH725WaTOGiG"
+  VITE_POSTHOG_HOST: "https://us.i.posthog.com"
+
+  VITE_BACKEND_URI: "https://chatbot-project-backend.vercel.app"
+
+  VITE_STRIPE_PUBLISHABLE_KEY: "pk_test_51R5v9oC15A7InoP98jYRQ6el3PrfCQsmn0VhOsti2tFDwiEuHwTIANiGmgvnfRqmuPNiOOuq7p3i4Szrd6n3FoGp00zLnzLjdo"
+  VITE_APP_URL: "https://stonk-hub.vercel.app"
+
+  VITE_EQUITY_ANALYST_PRICE_ID: "price_1R5vFhC15A7InoP9bTVXGLxS"
+  VITE_GLOBAL_MACRO_PRICE_ID: "price_1R6F3XC15A7InoP9X4zV8Ys1"
+  PORT: 8080
+
+handlers:
+  - url: /(.*\..+)$
+    static_files: dist/\1
+    upload: dist/(.*\..+)$
+    secure: always
+    redirect_http_response_code: 301
+  - url: /.*
+    static_files: dist/index.html
+    upload: dist/index.html
+    secure: always
+    redirect_http_response_code: 301
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 1
