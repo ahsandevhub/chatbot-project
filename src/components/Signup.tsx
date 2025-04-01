@@ -77,19 +77,19 @@ const Signup = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
-      <div className="absolute sm:max-w-md w-full text-center md:top-20 top-10 left-1/2 -translate-x-1/2 bg-gray-200 rounded-full px-4 py-1 text-sm">
-        Please use a valid email address otherwise you won't receive the
-        confrimation mail.
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
           transition={{ duration: 0.3 }}
-          className="w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md"
+          className="relative w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md"
         >
+          <div className="absolute sm:max-w-md w-full text-center -top-20 left-1/2 -translate-x-1/2 bg-gray-200 rounded-full px-4 py-1 text-sm">
+            Please use a valid email address otherwise you won't receive the
+            confrimation mail.
+          </div>
           <button
             onClick={() => navigate("/")}
             className="flex w-max text-sm mr-auto items-center gap-2 hover:gap-1 transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
