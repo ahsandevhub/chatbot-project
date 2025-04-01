@@ -62,7 +62,7 @@ const SuccessPage = () => {
             onClick={() => navigate("/login")}
             className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition"
           >
-            Go to Login Now
+            Go to Dashboard
           </button>
         </div>
       </div>
