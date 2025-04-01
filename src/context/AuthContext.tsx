@@ -11,7 +11,7 @@ interface AuthContextType {
     email: string,
     password: string,
     firstName: string
-  ) => Promise<{ user: User | null }>;
+  ) => Promise<{ user: User | null; session: Session | null }>;
   customGoogleSignIn: () => Promise<{
     data: { provider: string; url: string } | null;
     error: AuthError | null;
@@ -19,6 +19,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   googleSignIn: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<void>;
+  resendConfirmationEmail: (email: string) => Promise<void>;
   session: Session | null;
 }
 
@@ -62,7 +63,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<void> => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -72,7 +73,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setSession(data.session);
   };
 
-  const signUp = async (email: string, password: string, firstName: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    firstName: string
+  ): Promise<void> => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -86,17 +91,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (error) throw error;
   };
 
+  const resendConfirmationEmail = async (email: string): Promise<void> => {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email,
+    });
+
+    if (error) throw error;
+  };
+
   const customSignUp = async (
     email: string,
     password: string,
     firstName: string
-  ) => {
-    // First, sign up the user
+  ): Promise<{ user: User | null; session: Session | null }> => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/login/`, // Where to redirect after email confirmation
+        emailRedirectTo: `${window.location.origin}/login/`,
         data: {
           firstName: firstName,
         },
@@ -105,8 +118,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     if (error) throw error;
 
-    setUser(data.user);
-    setSession(data.session);
+    setUser(data.user ?? null);
+    setSession(data.session ?? null);
 
     return {
       user: data.user ?? null,
@@ -114,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   };
 
-  const googleSignIn = async () => {
+  const googleSignIn = async (): Promise<{ error: AuthError | null }> => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -122,7 +135,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error };
   };
 
-  const customGoogleSignIn = async () => {
+  const customGoogleSignIn = async (): Promise<{
+    data: { provider: string; url: string } | null;
+    error: AuthError | null;
+  }> => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -130,39 +146,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { data, error };
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
   };
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string): Promise<void> => {
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        signIn,
-        signUp,
-        customSignUp,
-        customGoogleSignIn,
-        signOut,
-        googleSignIn,
-        resetPassword,
-        session,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const value: AuthContextType = {
+    user,
+    isLoading,
+    signIn,
+    signUp,
+    customSignUp,
+    customGoogleSignIn,
+    signOut,
+    googleSignIn,
+    resetPassword,
+    resendConfirmationEmail,
+    session,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");

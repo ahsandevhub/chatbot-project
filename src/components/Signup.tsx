@@ -1,31 +1,88 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeftIcon, Eye, EyeOff } from "lucide-react";
-import React, { useState } from "react";
+import { ArrowLeftIcon, Eye, EyeOff, MailCheck } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 
+const RESEND_COOLDOWN_SECONDS = 120;
+
 const Signup = () => {
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { signUp, googleSignIn } = useAuth();
+  const { signUp, googleSignIn, resendConfirmationEmail } = useAuth();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [canResend, setCanResend] = useState(true);
+
+  // Handle cooldown timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (cooldown > 0) {
+      interval = setInterval(() => {
+        setCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [cooldown]);
 
   const validateEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   };
 
+  const handleResendEmail = async () => {
+    if (!canResend) return;
+
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      await resendConfirmationEmail(email);
+      setSuccessMsg("Confirmation email resent successfully!");
+      setCooldown(RESEND_COOLDOWN_SECONDS);
+      setCanResend(false);
+      toast.success("Confirmation email resent!", {
+        position: "top-center",
+        description: "Please check your inbox for the confirmation link.",
+        duration: 10000,
+      });
+    } catch (error: unknown) {
+      let message = "Failed to resend confirmation email.";
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      setErrorMsg(message);
+      toast.error(message, { position: "top-center" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
     setLoading(true);
 
     if (password !== confirmPassword) {
@@ -42,14 +99,9 @@ const Signup = () => {
 
     try {
       await signUp(email.trim(), password, firstName);
-      console.log("Signup successful!");
-      toast.success("Account registered successfully!", {
-        position: "top-center",
-        description: "We've sent you an email please confirm it before login.",
-        duration: 10000,
-      });
+      setSuccessMsg("Registration successful!");
+      setEmailSent(true);
       localStorage.setItem("runEdgeFunction", "true");
-      navigate("/login");
     } catch (error: unknown) {
       let message = "An unexpected error occurred.";
       if (error instanceof Error) {
@@ -87,8 +139,8 @@ const Signup = () => {
           className="relative w-full max-w-md p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md"
         >
           <div className="absolute sm:max-w-md w-full text-center -top-20 left-1/2 -translate-x-1/2 bg-gray-200 rounded-full px-4 py-1 text-sm">
-            Please use a valid email address otherwise you won't receive the
-            confrimation mail.
+            Please provide a valid and permanent email address to ensure you
+            receive the confirmation email.
           </div>
           <button
             onClick={() => navigate("/")}
@@ -103,129 +155,180 @@ const Signup = () => {
           {errorMsg && (
             <p className="text-red-500 text-sm text-center mt-2">{errorMsg}</p>
           )}
-          <form onSubmit={handleSubmit} className="mt-4">
-            <div className="mb-4">
+          {successMsg && (
+            <p className="text-green-500 text-sm text-center mt-2">
+              {successMsg}
+            </p>
+          )}
+
+          {!emailSent ? (
+            <form onSubmit={handleSubmit} className="mt-4">
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+              </div>
               <input
-                type="text"
-                placeholder="First Name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 mb-4 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
                 required
               />
-              {/* <input
-                type="text"
-                placeholder="Last Name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
-                required
-              /> */}
-            </div>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 mb-4 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
-              required
-            />
-            <div className="relative mb-4">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
-                required
-              />
+              <div className="relative mb-4">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-3 top-1/2 -translate-y-1/2"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              <div className="relative mb-4">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-3 top-1/2 -translate-y-1/2"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 top-1/2 -translate-y-1/2"
+                type="submit"
+                className={`w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 rounded-lg transition ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={loading}
               >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {loading ? "Signing Up..." : "Sign Up"}
               </button>
-            </div>
-            <div className="relative mb-4">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white"
-                required
-              />
+            </form>
+          ) : (
+            <div className="mt-6 text-center">
+              <div className="flex justify-center mb-4">
+                <MailCheck className="h-12 w-12 text-gray-500" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Check Your Email
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                We've sent a confirmation link to{" "}
+                <span className="font-medium">{email}</span>. Please click the
+                link to verify your account.
+              </p>
               <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-3 top-1/2 -translate-y-1/2"
+                onClick={handleResendEmail}
+                className={`w-full flex items-center justify-center gap-2 ${
+                  canResend
+                    ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                } font-semibold py-2 rounded-lg transition`}
+                disabled={!canResend || loading}
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {loading
+                  ? "Sending..."
+                  : canResend
+                  ? "Resend Confirmation Email"
+                  : `Resend available in ${formatTime(cooldown)}`}
               </button>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                Didn't receive the email? Check your spam folder or try
+                resending.
+              </p>
             </div>
-            <button
-              type="submit"
-              className={`w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 rounded-lg transition ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              disabled={loading}
-            >
-              {loading ? "Signing Up..." : "Sign Up"}
-            </button>
-          </form>
-          <div className="mt-4 flex items-center justify-center">
-            <div className="border-t border-gray-300 dark:border-gray-700 w-1/3"></div>
-            <span className="mx-2 text-gray-600 dark:text-gray-400">or</span>
-            <div className="border-t border-gray-300 dark:border-gray-700 w-1/3"></div>
-          </div>
-          <div className="mt-4 flex flex-col gap-2">
-            <button
-              onClick={async () => {
-                setLoading(true);
-                setErrorMsg(null);
-                try {
-                  const { error } = await googleSignIn();
-                  if (error) {
-                    console.error("Signup Error:", error);
-                    if (error.message.toLowerCase().includes("email already")) {
-                      setErrorMsg("Email address is already in use.");
-                      toast.error("Email address is already in use.", {
-                        position: "top-center",
-                      });
-                    } else {
-                      setErrorMsg(error.message);
-                      toast.error(error.message, { position: "top-center" });
+          )}
+
+          {!emailSent && (
+            <>
+              <div className="mt-4 flex items-center justify-center">
+                <div className="border-t border-gray-300 dark:border-gray-700 w-1/3"></div>
+                <span className="mx-2 text-gray-600 dark:text-gray-400">
+                  or
+                </span>
+                <div className="border-t border-gray-300 dark:border-gray-700 w-1/3"></div>
+              </div>
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  onClick={async () => {
+                    setLoading(true);
+                    setErrorMsg(null);
+                    try {
+                      const { error } = await googleSignIn();
+                      if (error) {
+                        console.error("Signup Error:", error);
+                        if (
+                          error.message.toLowerCase().includes("email already")
+                        ) {
+                          setErrorMsg("Email address is already in use.");
+                          toast.error("Email address is already in use.", {
+                            position: "top-center",
+                          });
+                        } else {
+                          setErrorMsg(error.message);
+                          toast.error(error.message, {
+                            position: "top-center",
+                          });
+                        }
+                      }
+                    } catch (error: unknown) {
+                      let message = "An unexpected error occurred.";
+                      if (error instanceof Error) {
+                        message = error.message;
+                      }
+                      setErrorMsg(message);
+                      toast.error(message, { position: "top-center" });
+                    } finally {
+                      setLoading(false);
                     }
-                  }
-                } catch (error: unknown) {
-                  let message = "An unexpected error occurred.";
-                  if (error instanceof Error) {
-                    message = error.message;
-                  }
-                  setErrorMsg(message);
-                  toast.error(message, { position: "top-center" });
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              className={`flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 px-4 font-medium text-gray-700 bg-white hover:bg-gray-100 transition-all shadow-sm ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              disabled={loading}
-            >
-              <img src="/google-icon.webp" alt="Google" className="h-5 w-5" />
-              <span>{loading ? "Signing up..." : "Continue with Google"}</span>
-            </button>
-          </div>
+                  }}
+                  className={`flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 px-4 font-medium text-gray-700 bg-white hover:bg-gray-100 transition-all shadow-sm ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={loading}
+                >
+                  <img
+                    src="/google-icon.webp"
+                    alt="Google"
+                    className="h-5 w-5"
+                  />
+                  <span>
+                    {loading ? "Signing up..." : "Continue with Google"}
+                  </span>
+                </button>
+              </div>
+            </>
+          )}
+
           <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
             Already have an account?{" "}
             <button
